@@ -14,8 +14,18 @@
         to="/patient-history"
         class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
       >
-        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        <svg
+          class="h-5 w-5 mr-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          />
         </svg>
         Back to List
       </router-link>
@@ -27,21 +37,44 @@
       class="bg-danger-50 border-l-4 border-danger-500 rounded-xl p-4 animate-scale-in"
     >
       <div class="flex items-center">
-        <svg class="h-5 w-5 text-danger-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        <svg
+          class="h-5 w-5 text-danger-500 mr-2"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+            clip-rule="evenodd"
+          />
         </svg>
-        <p class="text-sm font-medium text-danger-700">{{ error }}</p>
+        <p class="text-sm font-medium text-danger-700">
+          {{ error }}
+        </p>
       </div>
     </div>
 
     <!-- Clinical Record Form -->
-    <form @submit.prevent="handleSubmit" class="space-y-6">
+    <form
+      class="space-y-6"
+      @submit.prevent="handleSubmit"
+    >
       <!-- Basic Information Section -->
       <div class="glass rounded-2xl shadow-lg p-6 space-y-6">
         <div class="border-b border-gray-200 pb-3">
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <svg class="h-5 w-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <svg
+              class="h-5 w-5 mr-2 text-primary-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
             </svg>
             Record Information
           </h3>
@@ -50,7 +83,10 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Title/Code -->
           <div class="md:col-span-2">
-            <label for="title" class="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              for="title"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
               Title/Description <span class="text-danger-500">*</span>
             </label>
             <input
@@ -60,12 +96,15 @@
               required
               class="block w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all"
               placeholder="e.g., Blood Pressure, Temperature, Diagnosis"
-            />
+            >
           </div>
 
           <!-- Status -->
           <div>
-            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              for="status"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
               Status <span class="text-danger-500">*</span>
             </label>
             <select
@@ -74,17 +113,33 @@
               required
               class="block w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all"
             >
-              <option value="" disabled>Select status</option>
-              <option value="registered">Registered</option>
-              <option value="preliminary">Preliminary</option>
-              <option value="final">Final</option>
-              <option value="amended">Amended</option>
+              <option
+                value=""
+                disabled
+              >
+                Select status
+              </option>
+              <option value="registered">
+                Registered
+              </option>
+              <option value="preliminary">
+                Preliminary
+              </option>
+              <option value="final">
+                Final
+              </option>
+              <option value="amended">
+                Amended
+              </option>
             </select>
           </div>
 
           <!-- Recorded Date -->
           <div>
-            <label for="effectiveDateTime" class="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              for="effectiveDateTime"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
               Recorded Date <span class="text-danger-500">*</span>
             </label>
             <input
@@ -93,7 +148,7 @@
               type="datetime-local"
               required
               class="block w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all"
-            />
+            >
           </div>
         </div>
       </div>
@@ -102,8 +157,18 @@
       <div class="glass rounded-2xl shadow-lg p-6 space-y-6">
         <div class="border-b border-gray-200 pb-3">
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <svg class="h-5 w-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            <svg
+              class="h-5 w-5 mr-2 text-primary-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+              />
             </svg>
             Patient & Recorded By
           </h3>
@@ -112,7 +177,10 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Patient -->
           <div>
-            <label for="patientId" class="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              for="patientId"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
               Patient <span class="text-danger-500">*</span>
             </label>
             <SearchableSelect
@@ -127,7 +195,10 @@
 
           <!-- Recorded By (Practitioner) -->
           <div>
-            <label for="performerId" class="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              for="performerId"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
               Recorded By
             </label>
             <SearchableSelect
@@ -145,8 +216,18 @@
       <div class="glass rounded-2xl shadow-lg p-6 space-y-6">
         <div class="border-b border-gray-200 pb-3">
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <svg class="h-5 w-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            <svg
+              class="h-5 w-5 mr-2 text-primary-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
             </svg>
             Observation Value
           </h3>
@@ -157,22 +238,46 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-3">Value Type</label>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <label class="relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors" :class="formData.valueType === 'quantity' ? 'border-primary-500 bg-primary-50' : 'border-gray-200'">
-                <input type="radio" v-model="formData.valueType" value="quantity" class="sr-only" />
+              <label
+                class="relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors"
+                :class="formData.valueType === 'quantity' ? 'border-primary-500 bg-primary-50' : 'border-gray-200'"
+              >
+                <input
+                  v-model="formData.valueType"
+                  type="radio"
+                  value="quantity"
+                  class="sr-only"
+                >
                 <div>
                   <p class="font-medium text-gray-900">Quantity</p>
                   <p class="text-xs text-gray-500">Numeric measurement</p>
                 </div>
               </label>
-              <label class="relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors" :class="formData.valueType === 'string' ? 'border-primary-500 bg-primary-50' : 'border-gray-200'">
-                <input type="radio" v-model="formData.valueType" value="string" class="sr-only" />
+              <label
+                class="relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors"
+                :class="formData.valueType === 'string' ? 'border-primary-500 bg-primary-50' : 'border-gray-200'"
+              >
+                <input
+                  v-model="formData.valueType"
+                  type="radio"
+                  value="string"
+                  class="sr-only"
+                >
                 <div>
                   <p class="font-medium text-gray-900">Text</p>
                   <p class="text-xs text-gray-500">Text description</p>
                 </div>
               </label>
-              <label class="relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors" :class="formData.valueType === 'none' ? 'border-primary-500 bg-primary-50' : 'border-gray-200'">
-                <input type="radio" v-model="formData.valueType" value="none" class="sr-only" />
+              <label
+                class="relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors"
+                :class="formData.valueType === 'none' ? 'border-primary-500 bg-primary-50' : 'border-gray-200'"
+              >
+                <input
+                  v-model="formData.valueType"
+                  type="radio"
+                  value="none"
+                  class="sr-only"
+                >
                 <div>
                   <p class="font-medium text-gray-900">None</p>
                   <p class="text-xs text-gray-500">No value</p>
@@ -182,9 +287,15 @@
           </div>
 
           <!-- Quantity Value -->
-          <div v-if="formData.valueType === 'quantity'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div
+            v-if="formData.valueType === 'quantity'"
+            class="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
             <div>
-              <label for="valueQuantity" class="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                for="valueQuantity"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Value
               </label>
               <input
@@ -194,10 +305,13 @@
                 step="any"
                 class="block w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all"
                 placeholder="e.g., 120"
-              />
+              >
             </div>
             <div>
-              <label for="valueUnit" class="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                for="valueUnit"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Unit
               </label>
               <input
@@ -206,13 +320,16 @@
                 type="text"
                 class="block w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all"
                 placeholder="e.g., mmHg, °C, kg"
-              />
+              >
             </div>
           </div>
 
           <!-- String Value -->
           <div v-if="formData.valueType === 'string'">
-            <label for="valueString" class="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              for="valueString"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
               Value
             </label>
             <textarea
@@ -221,7 +338,7 @@
               rows="3"
               class="block w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all"
               placeholder="Enter text value..."
-            ></textarea>
+            />
           </div>
         </div>
       </div>
@@ -230,15 +347,28 @@
       <div class="glass rounded-2xl shadow-lg p-6 space-y-6">
         <div class="border-b border-gray-200 pb-3">
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <svg class="h-5 w-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            <svg
+              class="h-5 w-5 mr-2 text-primary-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+              />
             </svg>
             Additional Notes
           </h3>
         </div>
 
         <div>
-          <label for="note" class="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            for="note"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
             Clinical Notes
           </label>
           <textarea
@@ -247,7 +377,7 @@
             rows="4"
             class="block w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all"
             placeholder="Any additional clinical notes..."
-          ></textarea>
+          />
         </div>
       </div>
 
@@ -270,8 +400,19 @@
             fill="none"
             viewBox="0 0 24 24"
           >
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            />
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
           </svg>
           <span>{{ loading ? 'Saving...' : (isEditMode ? 'Update Record' : 'Create Record') }}</span>
         </button>

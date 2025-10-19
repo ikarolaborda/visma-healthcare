@@ -6,35 +6,73 @@
       </h1>
     </div>
 
-    <form @submit.prevent="handleSubmit" class="space-y-6">
+    <form
+      class="space-y-6"
+      @submit.prevent="handleSubmit"
+    >
       <!-- Personal Info -->
       <div class="glass rounded-2xl shadow-lg p-8">
-        <h2 class="text-lg font-semibold mb-6">{{ $t('practitioner.personalInfo') }}</h2>
+        <h2 class="text-lg font-semibold mb-6">
+          {{ $t('practitioner.personalInfo') }}
+        </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('practitioner.prefix') }}</label>
-            <select v-model="formData.prefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-              <option value="">{{ $t('common.select') }}</option>
-              <option value="Dr.">Dr.</option>
-              <option value="Prof.">Prof.</option>
-              <option value="Mr.">Mr.</option>
-              <option value="Ms.">Ms.</option>
+            <select
+              v-model="formData.prefix"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            >
+              <option value="">
+                {{ $t('common.select') }}
+              </option>
+              <option value="Dr.">
+                Dr.
+              </option>
+              <option value="Prof.">
+                Prof.
+              </option>
+              <option value="Mr.">
+                Mr.
+              </option>
+              <option value="Ms.">
+                Ms.
+              </option>
             </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('practitioner.givenName') }} *</label>
-            <input v-model="formData.givenName" type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            <input
+              v-model="formData.givenName"
+              type="text"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            >
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('practitioner.familyName') }} *</label>
-            <input v-model="formData.familyName" type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            <input
+              v-model="formData.familyName"
+              type="text"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            >
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('practitioner.gender') }} *</label>
-            <select v-model="formData.gender" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-              <option value="male">{{ $t('practitioner.male') }}</option>
-              <option value="female">{{ $t('practitioner.female') }}</option>
-              <option value="other">{{ $t('practitioner.other') }}</option>
+            <select
+              v-model="formData.gender"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            >
+              <option value="male">
+                {{ $t('practitioner.male') }}
+              </option>
+              <option value="female">
+                {{ $t('practitioner.female') }}
+              </option>
+              <option value="other">
+                {{ $t('practitioner.other') }}
+              </option>
             </select>
           </div>
         </div>
@@ -42,31 +80,63 @@
 
       <!-- Professional Info -->
       <div class="glass rounded-2xl shadow-lg p-8">
-        <h2 class="text-lg font-semibold mb-6">{{ $t('practitioner.professionalInfo') }}</h2>
+        <h2 class="text-lg font-semibold mb-6">
+          {{ $t('practitioner.professionalInfo') }}
+        </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('practitioner.specialization') }} *</label>
-            <input v-model="formData.specialization" type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            <input
+              v-model="formData.specialization"
+              type="text"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            >
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('practitioner.qualification') }} *</label>
-            <input v-model="formData.qualification" type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            <input
+              v-model="formData.qualification"
+              type="text"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            >
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('practitioner.email') }} *</label>
-            <input v-model="formData.email" type="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            <input
+              v-model="formData.email"
+              type="email"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            >
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('practitioner.phone') }} *</label>
-            <input v-model="formData.phone" type="tel" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            <input
+              v-model="formData.phone"
+              type="tel"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            >
           </div>
         </div>
       </div>
 
       <!-- Actions -->
       <div class="flex items-center justify-end gap-4">
-        <button type="button" @click="$router.push('/practitioners')" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">{{ $t('common.cancel') }}</button>
-        <button type="submit" :disabled="saving" class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50">
+        <button
+          type="button"
+          class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+          @click="$router.push('/practitioners')"
+        >
+          {{ $t('common.cancel') }}
+        </button>
+        <button
+          type="submit"
+          :disabled="saving"
+          class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+        >
           {{ saving ? $t('common.saving') : $t('common.save') }}
         </button>
       </div>

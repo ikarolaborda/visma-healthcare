@@ -3,24 +3,43 @@
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">Billing & Invoices</h1>
-        <p class="mt-1 text-sm text-gray-500">Manage patient invoices and billing records</p>
+        <h1 class="text-3xl font-bold text-gray-900">
+          Billing & Invoices
+        </h1>
+        <p class="mt-1 text-sm text-gray-500">
+          Manage patient invoices and billing records
+        </p>
       </div>
       <router-link
         to="/billing/add"
         class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 space-x-2"
       >
-        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        <svg
+          class="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          />
         </svg>
         <span>Create Invoice</span>
       </router-link>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="glass rounded-2xl shadow-lg p-12 text-center">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-      <p class="text-gray-500 mt-4">Loading invoices...</p>
+    <div
+      v-if="loading"
+      class="glass rounded-2xl shadow-lg p-12 text-center"
+    >
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto" />
+      <p class="text-gray-500 mt-4">
+        Loading invoices...
+      </p>
     </div>
 
     <!-- Empty State -->
@@ -30,18 +49,42 @@
     >
       <div class="flex flex-col items-center space-y-4">
         <div class="h-24 w-24 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center">
-          <svg class="h-12 w-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <svg
+            class="h-12 w-12 text-primary-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
           </svg>
         </div>
-        <h3 class="text-xl font-semibold text-gray-900">No Invoices Found</h3>
-        <p class="text-gray-500 max-w-sm">Get started by creating your first invoice</p>
+        <h3 class="text-xl font-semibold text-gray-900">
+          No Invoices Found
+        </h3>
+        <p class="text-gray-500 max-w-sm">
+          Get started by creating your first invoice
+        </p>
         <router-link
           to="/billing/add"
           class="inline-flex items-center px-6 py-3 bg-primary-600 text-white font-medium rounded-xl shadow-md hover:bg-primary-700 transition-all"
         >
-          <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <svg
+            class="h-5 w-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
           </svg>
           Create First Invoice
         </router-link>
@@ -49,7 +92,10 @@
     </div>
 
     <!-- Invoices List -->
-    <div v-else class="glass rounded-2xl shadow-lg overflow-hidden">
+    <div
+      v-else
+      class="glass rounded-2xl shadow-lg overflow-hidden"
+    >
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50/50">
@@ -81,17 +127,28 @@
               class="hover:bg-gray-50/50 transition-colors"
             >
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{{ invoice.invoice_number }}</div>
+                <div class="text-sm font-medium text-gray-900">
+                  {{ invoice.invoice_number }}
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ invoice.patient_name || 'N/A' }}</div>
+                <div class="text-sm text-gray-900">
+                  {{ invoice.patient_name || 'N/A' }}
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-500">{{ formatDate(invoice.date) }}</div>
+                <div class="text-sm text-gray-500">
+                  {{ formatDate(invoice.date) }}
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-semibold text-gray-900">${{ formatAmount(invoice.total_gross) }}</div>
-                <div v-if="(invoice.balance_due || 0) > 0" class="text-xs text-danger-600">
+                <div class="text-sm font-semibold text-gray-900">
+                  ${{ formatAmount(invoice.total_gross) }}
+                </div>
+                <div
+                  v-if="(invoice.balance_due || 0) > 0"
+                  class="text-xs text-danger-600"
+                >
                   Balance: ${{ formatAmount(invoice.balance_due) }}
                 </div>
               </td>
@@ -111,8 +168,8 @@
                   View
                 </router-link>
                 <button
-                  @click="handleDelete(invoice.id || '', invoice.invoice_number || '')"
                   class="text-danger-600 hover:text-danger-900"
+                  @click="handleDelete(invoice.id || '', invoice.invoice_number || '')"
                 >
                   Delete
                 </button>

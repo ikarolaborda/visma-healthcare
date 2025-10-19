@@ -109,7 +109,7 @@ test: ## Run backend tests
 
 test-coverage: ## Run tests with coverage report
 	@echo "$(GREEN)Running tests with coverage...$(NC)"
-	docker compose exec backend pytest --cov=patients --cov-report=html --cov-report=term
+	docker compose exec backend pytest --cov=. --cov-report=html --cov-report=xml --cov-report=term
 
 lint: ## Run code linting
 	@echo "$(GREEN)Running linters...$(NC)"

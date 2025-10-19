@@ -14,8 +14,18 @@
         to="/billing"
         class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
       >
-        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        <svg
+          class="h-5 w-5 mr-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          />
         </svg>
         Back to List
       </router-link>
@@ -27,21 +37,44 @@
       class="bg-danger-50 border-l-4 border-danger-500 rounded-xl p-4 animate-scale-in"
     >
       <div class="flex items-center">
-        <svg class="h-5 w-5 text-danger-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        <svg
+          class="h-5 w-5 text-danger-500 mr-2"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+            clip-rule="evenodd"
+          />
         </svg>
-        <p class="text-sm font-medium text-danger-700">{{ error }}</p>
+        <p class="text-sm font-medium text-danger-700">
+          {{ error }}
+        </p>
       </div>
     </div>
 
     <!-- Invoice Form -->
-    <form @submit.prevent="handleSubmit" class="space-y-6">
+    <form
+      class="space-y-6"
+      @submit.prevent="handleSubmit"
+    >
       <!-- Basic Information Section -->
       <div class="glass rounded-2xl shadow-lg p-6 space-y-6">
         <div class="border-b border-gray-200 pb-3">
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <svg class="h-5 w-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <svg
+              class="h-5 w-5 mr-2 text-primary-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
             </svg>
             Invoice Information
           </h3>
@@ -50,7 +83,10 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Status -->
           <div>
-            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              for="status"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
               Status <span class="text-danger-500">*</span>
             </label>
             <select
@@ -59,17 +95,33 @@
               required
               class="block w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all"
             >
-              <option value="" disabled>Select status</option>
-              <option value="draft">Draft</option>
-              <option value="issued">Issued</option>
-              <option value="balanced">Balanced (Paid)</option>
-              <option value="cancelled">Cancelled</option>
+              <option
+                value=""
+                disabled
+              >
+                Select status
+              </option>
+              <option value="draft">
+                Draft
+              </option>
+              <option value="issued">
+                Issued
+              </option>
+              <option value="balanced">
+                Balanced (Paid)
+              </option>
+              <option value="cancelled">
+                Cancelled
+              </option>
             </select>
           </div>
 
           <!-- Invoice Date -->
           <div>
-            <label for="date" class="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              for="date"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
               Invoice Date <span class="text-danger-500">*</span>
             </label>
             <input
@@ -78,7 +130,7 @@
               type="date"
               required
               class="block w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all"
-            />
+            >
           </div>
         </div>
       </div>
@@ -87,15 +139,28 @@
       <div class="glass rounded-2xl shadow-lg p-6 space-y-6">
         <div class="border-b border-gray-200 pb-3">
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <svg class="h-5 w-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            <svg
+              class="h-5 w-5 mr-2 text-primary-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
             </svg>
             Patient
           </h3>
         </div>
 
         <div>
-          <label for="patientId" class="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            for="patientId"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
             Patient <span class="text-danger-500">*</span>
           </label>
           <SearchableSelect
@@ -113,18 +178,38 @@
       <div class="glass rounded-2xl shadow-lg p-6 space-y-6">
         <div class="border-b border-gray-200 pb-3 flex items-center justify-between">
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <svg class="h-5 w-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            <svg
+              class="h-5 w-5 mr-2 text-primary-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
             </svg>
             Line Items
           </h3>
           <button
             type="button"
-            @click="addLineItem"
             class="inline-flex items-center px-3 py-2 text-sm font-medium text-primary-700 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
+            @click="addLineItem"
           >
-            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            <svg
+              class="h-4 w-4 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
             </svg>
             Add Item
           </button>
@@ -137,21 +222,36 @@
             class="border border-gray-200 rounded-xl p-4 bg-white/30"
           >
             <div class="flex items-start justify-between mb-4">
-              <h4 class="text-sm font-medium text-gray-700">Item {{ index + 1 }}</h4>
+              <h4 class="text-sm font-medium text-gray-700">
+                Item {{ index + 1 }}
+              </h4>
               <button
                 type="button"
-                @click="removeLineItem(index)"
                 class="text-danger-600 hover:text-danger-800"
+                @click="removeLineItem(index)"
               >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="md:col-span-2">
-                <label :for="`item-description-${index}`" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  :for="`item-description-${index}`"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Description <span class="text-danger-500">*</span>
                 </label>
                 <input
@@ -161,11 +261,14 @@
                   required
                   class="block w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="Service description"
-                />
+                >
               </div>
 
               <div>
-                <label :for="`item-amount-${index}`" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  :for="`item-amount-${index}`"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Amount ($) <span class="text-danger-500">*</span>
                 </label>
                 <input
@@ -177,12 +280,15 @@
                   required
                   class="block w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="0.00"
-                />
+                >
               </div>
             </div>
           </div>
 
-          <div v-if="formData.lineItems.length === 0" class="text-center py-8 text-gray-500">
+          <div
+            v-if="formData.lineItems.length === 0"
+            class="text-center py-8 text-gray-500"
+          >
             <p>No items added. Click "Add Item" to begin.</p>
           </div>
         </div>
@@ -215,8 +321,19 @@
             fill="none"
             viewBox="0 0 24 24"
           >
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            />
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
           </svg>
           <span>{{ loading ? 'Saving...' : (isEditMode ? 'Update Invoice' : 'Create Invoice') }}</span>
         </button>

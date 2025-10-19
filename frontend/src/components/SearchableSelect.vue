@@ -1,21 +1,34 @@
 <template>
-  <div class="relative" ref="dropdownRef">
+  <div
+    ref="dropdownRef"
+    class="relative"
+  >
     <!-- Input Field -->
     <div class="relative">
       <input
-        type="text"
         v-model="searchQuery"
-        @focus="isOpen = true"
-        @input="handleSearch"
+        type="text"
         :placeholder="placeholder"
         :required="required"
         :disabled="disabled"
         class="block w-full px-3 py-3 pr-10 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all"
         :class="{ 'cursor-not-allowed opacity-60': disabled }"
-      />
+        @focus="isOpen = true"
+        @input="handleSearch"
+      >
       <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        <svg
+          class="h-5 w-5 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </div>
     </div>
@@ -40,12 +53,12 @@
             <li
               v-for="option in filteredOptions"
               :key="option[valueKey]"
-              @click="selectOption(option)"
               class="px-4 py-2 hover:bg-primary-50 cursor-pointer transition-colors"
               :class="{
                 'bg-primary-100 text-primary-900': modelValue === option[valueKey],
                 'text-gray-900': modelValue !== option[valueKey]
               }"
+              @click="selectOption(option)"
             >
               {{ option[labelKey] }}
             </li>
@@ -60,7 +73,9 @@
         class="absolute z-[9999] bg-white rounded-xl shadow-lg border border-gray-200 px-4 py-3"
         :style="dropdownStyle"
       >
-        <p class="text-sm text-gray-500 text-center">No results found</p>
+        <p class="text-sm text-gray-500 text-center">
+          No results found
+        </p>
       </div>
     </Teleport>
   </div>

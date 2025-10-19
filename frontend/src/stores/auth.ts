@@ -5,34 +5,63 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import axios from 'axios'
+import type { Ref, ComputedRef } from 'vue'
+import apiClient from '../services/api'
+import type { User, AuthTokens, LoginCredentials, RegisterData } from '../types'
 
 // Use relative URL for auth endpoints (proxied through nginx)
 const API_URL = '/api/auth'
 
-export const useAuthStore = defineStore('auth', () => {
+interface AuthStore {
   // State
-  const user = ref(null)
-  const accessToken = ref(localStorage.getItem('accessToken') || null)
-  const refreshToken = ref(localStorage.getItem('refreshToken') || null)
-  const loading = ref(false)
-  const error = ref(null)
+  user: Ref<User | null>
+  accessToken: Ref<string | null>
+  refreshToken: Ref<string | null>
+  loading: Ref<boolean>
+  error: Ref<any>
+
+  // Computed
+  isAuthenticated: ComputedRef<boolean>
+  userName: ComputedRef<string>
+
+  // Actions
+  register: (userData: RegisterData) => Promise<any>
+  login: (credentials: LoginCredentials) => Promise<AuthTokens>
+  logout: () => Promise<void>
+  fetchProfile: () => Promise<User>
+  refreshAccessToken: () => Promise<string>
+  changePassword: (passwordData: { old_password: string; new_password: string }) => Promise<any>
+  initialize: () => Promise<void>
+  clearError: () => void
+}
+
+export const useAuthStore = defineStore('auth', (): AuthStore => {
+  // State
+  const user = ref<User | null>(null)
+  const accessToken = ref<string | null>(localStorage.getItem('accessToken') || null)
+  const refreshToken = ref<string | null>(localStorage.getItem('refreshToken') || null)
+  const loading = ref<boolean>(false)
+  const error = ref<any>(null)
 
   // Computed
   const isAuthenticated = computed(() => !!accessToken.value && !!user.value)
-  const userName = computed(() => user.value ? `${user.value.first_name} ${user.value.last_name}`.trim() || user.value.username : '')
+  const userName = computed(() =>
+    user.value
+      ? `${user.value.first_name} ${user.value.last_name}`.trim() || user.value.username
+      : ''
+  )
 
   // Actions
 
   /**
    * Register a new user account
    */
-  const register = async (userData) => {
+  const register = async (userData: RegisterData): Promise<any> => {
     loading.value = true
     error.value = null
 
     try {
-      const response = await axios.post(`${API_URL}/register/`, userData)
+      const response = await apiClient.post(`${API_URL}/register/`, userData)
 
       // Store tokens
       accessToken.value = response.data.tokens.access
@@ -43,11 +72,8 @@ export const useAuthStore = defineStore('auth', () => {
       // Store user data
       user.value = response.data.user
 
-      // Set default authorization header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken.value}`
-
       return response.data
-    } catch (err) {
+    } catch (err: any) {
       error.value = err.response?.data || 'Registration failed'
       throw err
     } finally {
@@ -58,12 +84,12 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Login with username and password
    */
-  const login = async (credentials) => {
+  const login = async (credentials: LoginCredentials): Promise<AuthTokens> => {
     loading.value = true
     error.value = null
 
     try {
-      const response = await axios.post(`${API_URL}/login/`, credentials)
+      const response = await apiClient.post<AuthTokens>(`${API_URL}/login/`, credentials)
 
       // Store tokens
       accessToken.value = response.data.access
@@ -71,14 +97,11 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('accessToken', response.data.access)
       localStorage.setItem('refreshToken', response.data.refresh)
 
-      // Set default authorization header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken.value}`
-
       // Fetch user profile
       await fetchProfile()
 
       return response.data
-    } catch (err) {
+    } catch (err: any) {
       error.value = err.response?.data || 'Login failed'
       throw err
     } finally {
@@ -89,14 +112,14 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Logout and clear authentication state
    */
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     loading.value = true
     error.value = null
 
     try {
       // Try to blacklist the token on the server
       if (refreshToken.value) {
-        await axios.post(`${API_URL}/logout/`, {
+        await apiClient.post(`${API_URL}/logout/`, {
           refresh: refreshToken.value
         })
       }
@@ -113,9 +136,6 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.removeItem('accessToken')
       localStorage.removeItem('refreshToken')
 
-      // Remove authorization header
-      delete axios.defaults.headers.common['Authorization']
-
       loading.value = false
     }
   }
@@ -123,9 +143,9 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Fetch current user profile
    */
-  const fetchProfile = async () => {
+  const fetchProfile = async (): Promise<User> => {
     try {
-      const response = await axios.get(`${API_URL}/profile/`)
+      const response = await apiClient.get<User>(`${API_URL}/profile/`)
       user.value = response.data
       return response.data
     } catch (err) {
@@ -139,19 +159,18 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Refresh the access token
    */
-  const refreshAccessToken = async () => {
+  const refreshAccessToken = async (): Promise<string> => {
     if (!refreshToken.value) {
       throw new Error('No refresh token available')
     }
 
     try {
-      const response = await axios.post(`${API_URL}/token/refresh/`, {
+      const response = await apiClient.post<{ access: string }>(`${API_URL}/token/refresh/`, {
         refresh: refreshToken.value
       })
 
       accessToken.value = response.data.access
       localStorage.setItem('accessToken', response.data.access)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken.value}`
 
       return response.data.access
     } catch (err) {
@@ -164,14 +183,14 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Change user password
    */
-  const changePassword = async (passwordData) => {
+  const changePassword = async (passwordData: { old_password: string; new_password: string }): Promise<any> => {
     loading.value = true
     error.value = null
 
     try {
-      const response = await axios.post(`${API_URL}/change-password/`, passwordData)
+      const response = await apiClient.post(`${API_URL}/change-password/`, passwordData)
       return response.data
-    } catch (err) {
+    } catch (err: any) {
       error.value = err.response?.data || 'Password change failed'
       throw err
     } finally {
@@ -182,10 +201,8 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Initialize auth state from localStorage
    */
-  const initialize = async () => {
+  const initialize = async (): Promise<void> => {
     if (accessToken.value) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken.value}`
-
       try {
         await fetchProfile()
       } catch (err) {
@@ -199,7 +216,7 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Clear error message
    */
-  const clearError = () => {
+  const clearError = (): void => {
     error.value = null
   }
 

@@ -163,7 +163,7 @@ The Patient model conforms to FHIR R4 Patient resource structure:
 - Docker and Docker Compose
 - Make (optional, for convenience commands)
 
-### Setup and Run
+### One-Command Installation (Recommended)
 
 1. **Clone the repository**:
    ```bash
@@ -177,7 +177,40 @@ The Patient model conforms to FHIR R4 Patient resource structure:
    # Edit .env with your configuration
    ```
 
-3. **Start the application** (using Make):
+3. **Run the complete installation**:
+   ```bash
+   make install
+   ```
+
+   This single command will:
+   - ✓ Build all Docker images
+   - ✓ Start all services
+   - ✓ Run database migrations
+   - ✓ Collect static files
+   - ✓ Create a demo user account (username: `demo`, password: `demo123`)
+   - ✓ Seed the database with realistic data:
+     - 15 Patients
+     - 8 Practitioners
+     - 50 Appointments
+     - 40 Prescriptions
+     - 70 Clinical Records
+     - 20 Invoices
+
+4. **Access the application**:
+   - Frontend: http://localhost
+   - Backend API: http://localhost:8000
+   - API Documentation: http://localhost:8000/swagger/
+   - Django Admin: http://localhost:8000/admin/
+
+5. **Login with demo credentials**:
+   - **Username**: `demo`
+   - **Password**: `demo123`
+
+### Manual Setup (Alternative)
+
+If you prefer to set up manually:
+
+1. **Start the application**:
    ```bash
    make setup
    ```
@@ -190,21 +223,15 @@ The Patient model conforms to FHIR R4 Patient resource structure:
    docker compose exec backend python manage.py collectstatic --noinput
    ```
 
-4. **Create a superuser** (optional):
+2. **Create a demo user**:
    ```bash
-   make createsuperuser
+   make create-demo-user
    ```
 
-5. **Seed the database with test data** (optional):
+3. **Seed the database with all data**:
    ```bash
-   make seed
+   make seed-all
    ```
-
-6. **Access the application**:
-   - Frontend: http://localhost
-   - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/swagger/
-   - Django Admin: http://localhost:8000/admin/
 
 ## Authentication
 
@@ -317,8 +344,11 @@ The project includes a comprehensive Makefile for common operations:
 - `make prune` - Remove all unused Docker resources
 
 ### Setup Commands
-- `make setup` - Initial setup: build, start, migrate
+- `make install` - **Complete installation: build, start, migrate, create demo user, and seed all data (RECOMMENDED)**
+- `make setup` - Initial setup: build, start, migrate (without seeding)
 - `make dev-setup` - Complete development setup including superuser
+- `make create-demo-user` - Create demo user for testing (username: demo, password: demo123)
+- `make seed-all` - Seed database with all realistic data (all entities)
 
 ### Backup Commands
 - `make backup-db` - Backup database to backup.sql

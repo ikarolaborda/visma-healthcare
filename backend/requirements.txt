@@ -35,3 +35,19 @@ isort==5.13.2
 
 # HTTP Client for healthcheck
 requests==2.31.0
+
+# Caching
+redis==4.6.0
+django-redis==5.4.0
+
+# Message Queue & Async Tasks
+celery[redis]==5.3.4
+kombu==5.3.4
+amqp==5.2.0
+django-celery-beat==2.7.0
+django-celery-results==2.5.1
+
+# Report Generation
+reportlab==4.0.8
+pandas==2.1.4
+openpyxl==3.1.2

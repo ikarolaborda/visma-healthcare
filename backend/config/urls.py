@@ -33,4 +33,19 @@ urlpatterns = [
 
     # FHIR Patient API
     path('fhir/', include('patients.urls')),
+
+    # FHIR Practitioner API
+    path('fhir/', include('practitioners.urls')),
+
+    # FHIR Appointment API
+    path('fhir/', include('appointments.urls')),
+
+    # FHIR MedicationRequest (Prescriptions) API
+    path('fhir/', include('prescriptions.urls')),
+
+    # Clinical Records (Patient History) API
+    path('fhir/', include('patient_history.urls')),
+
+    # Invoice (Billing) API
+    path('fhir/', include('billing.urls')),
 ]

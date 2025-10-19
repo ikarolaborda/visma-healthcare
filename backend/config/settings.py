@@ -2,6 +2,7 @@
 Django settings for healthcare project.
 """
 
+import os
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
@@ -29,10 +30,18 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'drf_yasg',
+    'django_celery_beat',
+    'django_celery_results',
 
     # Local apps
+    'common.apps.CommonConfig',
     'patients.apps.PatientsConfig',
+    'practitioners.apps.PractitionersConfig',
+    'appointments.apps.AppointmentsConfig',
     'authentication.apps.AuthenticationConfig',
+    'prescriptions',
+    'patient_history',
+    'billing',
 ]
 
 MIDDLEWARE = [
@@ -154,4 +163,46 @@ SWAGGER_SETTINGS = {
     },
     'USE_SESSION_AUTH': False,
     'JSON_EDITOR': True,
+}
+
+# Redis Cache Configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': config('REDIS_URL', default='redis://localhost:6379/0'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_CLASS_KWARGS': {
+                'max_connections': 50,
+                'retry_on_timeout': True,
+            },
+            'SOCKET_CONNECT_TIMEOUT': 5,
+            'SOCKET_TIMEOUT': 5,
+        },
+        'KEY_PREFIX': 'healthcare',
+        'TIMEOUT': 300,  # 5 minutes default
+    }
+}
+
+# Celery Configuration
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='amqp://guest:guest@localhost:5672//')
+CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/1')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes
+CELERY_RESULT_EXPIRES = 3600  # 1 hour
+
+# Celery Beat Configuration
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# Cache time-to-live settings (in seconds)
+CACHE_TTL = {
+    'DOCTOR_AVAILABILITY': 60 * 15,  # 15 minutes
+    'PATIENT_LOOKUP': 60 * 5,  # 5 minutes
+    'APPOINTMENT_SLOTS': 60 * 10,  # 10 minutes
+    'REPORT_RESULTS': 60 * 30,  # 30 minutes
 }

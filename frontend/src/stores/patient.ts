@@ -4,9 +4,17 @@
  */
 import { defineStore } from 'pinia'
 import { patientService } from '../services/api'
+import type { Patient, Bundle } from '../types/fhir'
+
+interface PatientState {
+  patients: Patient[]
+  currentPatient: Patient | null
+  loading: boolean
+  error: string | null
+}
 
 export const usePatientStore = defineStore('patient', {
-  state: () => ({
+  state: (): PatientState => ({
     patients: [],
     currentPatient: null,
     loading: false,
@@ -17,10 +25,10 @@ export const usePatientStore = defineStore('patient', {
     /**
      * Get all patients sorted by creation date
      */
-    sortedPatients: (state) => {
+    sortedPatients: (state): Patient[] => {
       return [...state.patients].sort((a, b) => {
-        const dateA = new Date(a.meta?.lastUpdated || 0)
-        const dateB = new Date(b.meta?.lastUpdated || 0)
+        const dateA = new Date(a.meta?.lastUpdated || 0).getTime()
+        const dateB = new Date(b.meta?.lastUpdated || 0).getTime()
         return dateB - dateA
       })
     },
@@ -29,27 +37,27 @@ export const usePatientStore = defineStore('patient', {
      * Get patient by ID
      */
     getPatientById: (state) => {
-      return (id) => state.patients.find((p) => p.id === id)
+      return (id: string): Patient | undefined => state.patients.find((p) => p.id === id)
     },
 
     /**
      * Check if patients are loaded
      */
-    hasPatients: (state) => state.patients.length > 0,
+    hasPatients: (state): boolean => state.patients.length > 0,
   },
 
   actions: {
     /**
      * Fetch all patients from API
      */
-    async fetchPatients() {
+    async fetchPatients(): Promise<void> {
       this.loading = true
       this.error = null
 
       try {
-        const bundle = await patientService.getAllPatients()
-        this.patients = bundle.entry?.map((entry) => entry.resource) || []
-      } catch (error) {
+        const patients = await patientService.getAllPatients()
+        this.patients = patients
+      } catch (error: any) {
         this.error = error.response?.data?.message || 'Failed to fetch patients'
         console.error('Error fetching patients:', error)
         throw error
@@ -61,14 +69,14 @@ export const usePatientStore = defineStore('patient', {
     /**
      * Fetch a single patient by ID
      */
-    async fetchPatientById(id) {
+    async fetchPatientById(id: string): Promise<Patient> {
       this.loading = true
       this.error = null
 
       try {
         this.currentPatient = await patientService.getPatientById(id)
         return this.currentPatient
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.message || 'Failed to fetch patient'
         console.error(`Error fetching patient ${id}:`, error)
         throw error
@@ -80,7 +88,7 @@ export const usePatientStore = defineStore('patient', {
     /**
      * Create a new patient
      */
-    async createPatient(patientData) {
+    async createPatient(patientData: Patient): Promise<Patient> {
       this.loading = true
       this.error = null
 
@@ -88,7 +96,7 @@ export const usePatientStore = defineStore('patient', {
         const newPatient = await patientService.createPatient(patientData)
         this.patients.push(newPatient)
         return newPatient
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.message || 'Failed to create patient'
         console.error('Error creating patient:', error)
         throw error
@@ -100,7 +108,7 @@ export const usePatientStore = defineStore('patient', {
     /**
      * Update an existing patient
      */
-    async updatePatient(id, patientData) {
+    async updatePatient(id: string, patientData: Patient): Promise<Patient> {
       this.loading = true
       this.error = null
 
@@ -118,7 +126,7 @@ export const usePatientStore = defineStore('patient', {
         }
 
         return updatedPatient
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.message || 'Failed to update patient'
         console.error(`Error updating patient ${id}:`, error)
         throw error
@@ -130,7 +138,7 @@ export const usePatientStore = defineStore('patient', {
     /**
      * Delete a patient
      */
-    async deletePatient(id) {
+    async deletePatient(id: string): Promise<void> {
       this.loading = true
       this.error = null
 
@@ -143,7 +151,7 @@ export const usePatientStore = defineStore('patient', {
         if (this.currentPatient?.id === id) {
           this.currentPatient = null
         }
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.message || 'Failed to delete patient'
         console.error(`Error deleting patient ${id}:`, error)
         throw error
@@ -155,14 +163,14 @@ export const usePatientStore = defineStore('patient', {
     /**
      * Clear error state
      */
-    clearError() {
+    clearError(): void {
       this.error = null
     },
 
     /**
      * Clear current patient
      */
-    clearCurrentPatient() {
+    clearCurrentPatient(): void {
       this.currentPatient = null
     },
   },

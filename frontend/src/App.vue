@@ -32,24 +32,99 @@
                 >
                   <span class="flex items-center space-x-2">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
-                    <span>Patients</span>
+                    <span>{{ $t('dashboard.dashboard') }}</span>
                   </span>
                 </router-link>
 
                 <router-link
-                  to="/add"
+                  to="/patients"
                   class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-                  :class="$route.path === '/add'
+                  :class="$route.path.startsWith('/patient')
                     ? 'bg-primary-600 text-white shadow-lg'
                     : 'text-gray-300 hover:bg-white/10 hover:text-white'"
                 >
                   <span class="flex items-center space-x-2">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <span>Add Patient</span>
+                    <span>{{ $t('nav.patients') }}</span>
+                  </span>
+                </router-link>
+
+                <router-link
+                  to="/appointments"
+                  class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                  :class="$route.path.startsWith('/appointment')
+                    ? 'bg-primary-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'"
+                >
+                  <span class="flex items-center space-x-2">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>{{ $t('nav.appointments') }}</span>
+                  </span>
+                </router-link>
+
+                <router-link
+                  to="/practitioners"
+                  class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                  :class="$route.path.startsWith('/practitioner')
+                    ? 'bg-primary-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'"
+                >
+                  <span class="flex items-center space-x-2">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span>{{ $t('nav.practitioners') }}</span>
+                  </span>
+                </router-link>
+
+                <router-link
+                  to="/prescriptions"
+                  class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                  :class="$route.path.startsWith('/prescription')
+                    ? 'bg-primary-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'"
+                >
+                  <span class="flex items-center space-x-2">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Prescriptions</span>
+                  </span>
+                </router-link>
+
+                <router-link
+                  to="/billing"
+                  class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                  :class="$route.path.startsWith('/billing')
+                    ? 'bg-primary-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'"
+                >
+                  <span class="flex items-center space-x-2">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Billing</span>
+                  </span>
+                </router-link>
+
+                <router-link
+                  to="/patient-history"
+                  class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                  :class="$route.path.startsWith('/patient-history')
+                    ? 'bg-primary-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'"
+                >
+                  <span class="flex items-center space-x-2">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>History</span>
                   </span>
                 </router-link>
 
@@ -120,36 +195,26 @@
             <div class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               {{ userName }}
             </div>
-            <router-link
-              to="/"
-              @click="mobileMenuOpen = false"
-              class="block px-3 py-2 rounded-lg text-base font-medium transition-all duration-200"
-              :class="$route.path === '/'
-                ? 'bg-primary-600 text-white'
-                : 'text-gray-300 hover:bg-white/10 hover:text-white'"
-            >
-              <span class="flex items-center space-x-2">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <span>Patients</span>
-              </span>
+            <router-link to="/" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-lg text-base font-medium transition-all" :class="$route.path === '/' ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-white/10'">
+              {{ $t('dashboard.dashboard') }}
             </router-link>
-
-            <router-link
-              to="/add"
-              @click="mobileMenuOpen = false"
-              class="block px-3 py-2 rounded-lg text-base font-medium transition-all duration-200"
-              :class="$route.path === '/add'
-                ? 'bg-primary-600 text-white'
-                : 'text-gray-300 hover:bg-white/10 hover:text-white'"
-            >
-              <span class="flex items-center space-x-2">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Add Patient</span>
-              </span>
+            <router-link to="/patients" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-lg text-base font-medium transition-all" :class="$route.path.startsWith('/patient') ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-white/10'">
+              {{ $t('nav.patients') }}
+            </router-link>
+            <router-link to="/appointments" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-lg text-base font-medium transition-all" :class="$route.path.startsWith('/appointment') ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-white/10'">
+              {{ $t('nav.appointments') }}
+            </router-link>
+            <router-link to="/practitioners" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-lg text-base font-medium transition-all" :class="$route.path.startsWith('/practitioner') ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-white/10'">
+              {{ $t('nav.practitioners') }}
+            </router-link>
+            <router-link to="/prescriptions" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-lg text-base font-medium transition-all" :class="$route.path.startsWith('/prescription') ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-white/10'">
+              Prescriptions
+            </router-link>
+            <router-link to="/billing" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-lg text-base font-medium transition-all" :class="$route.path.startsWith('/billing') ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-white/10'">
+              Billing
+            </router-link>
+            <router-link to="/patient-history" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-lg text-base font-medium transition-all" :class="$route.path.startsWith('/patient-history') ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-white/10'">
+              Patient History
             </router-link>
 
             <button

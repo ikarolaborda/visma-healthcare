@@ -134,6 +134,67 @@ setup: build up migrate collectstatic ## Initial setup: build, start, migrate, a
 dev-setup: setup createsuperuser ## Complete development setup including superuser
 	@echo "$(GREEN)Development environment ready!$(NC)"
 
+install: ## Complete installation: build, start, migrate, create demo user, and seed all data
+	@echo "$(BLUE)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(BLUE)║  Healthcare Patient Management System - Full Installation ║$(NC)"
+	@echo "$(BLUE)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo ""
+	@echo "$(GREEN)Step 1/7: Building Docker images...$(NC)"
+	@docker compose build
+	@echo ""
+	@echo "$(GREEN)Step 2/7: Starting services...$(NC)"
+	@docker compose up -d
+	@echo ""
+	@echo "$(GREEN)Step 3/7: Waiting for services to be ready...$(NC)"
+	@sleep 10
+	@echo ""
+	@echo "$(GREEN)Step 4/7: Running database migrations...$(NC)"
+	@docker compose exec backend python manage.py migrate
+	@echo ""
+	@echo "$(GREEN)Step 5/7: Collecting static files...$(NC)"
+	@docker compose exec backend python manage.py collectstatic --noinput
+	@echo ""
+	@echo "$(GREEN)Step 6/7: Creating demo user account...$(NC)"
+	@docker compose exec backend python manage.py shell -c "from django.contrib.auth.models import User; u, created = User.objects.get_or_create(username='demo', defaults={'email': 'demo@example.com', 'first_name': 'Demo', 'last_name': 'User'}); u.set_password('demo123'); u.save(); print('  ✓ Demo user created' if created else '  ✓ Demo user already exists')"
+	@echo "$(YELLOW)  Demo credentials - Username: demo, Password: demo123$(NC)"
+	@echo ""
+	@echo "$(GREEN)Step 7/7: Seeding database with realistic data...$(NC)"
+	@docker compose exec backend python seed_realistic_data.py
+	@echo ""
+	@echo "$(BLUE)╔════════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(BLUE)║              Installation Complete! 🎉                     ║$(NC)"
+	@echo "$(BLUE)╚════════════════════════════════════════════════════════════╝$(NC)"
+	@echo ""
+	@echo "$(GREEN)✓ Application is ready to use!$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Access the application:$(NC)"
+	@echo "  Frontend:        $(BLUE)http://localhost$(NC)"
+	@echo "  Backend API:     $(BLUE)http://localhost:8000$(NC)"
+	@echo "  API Docs:        $(BLUE)http://localhost:8000/swagger/$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Demo Login Credentials:$(NC)"
+	@echo "  Username: $(BLUE)demo$(NC)"
+	@echo "  Password: $(BLUE)demo123$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Database contains:$(NC)"
+	@echo "  • 15 Patients"
+	@echo "  • 8 Practitioners"
+	@echo "  • 50 Appointments"
+	@echo "  • 40 Prescriptions"
+	@echo "  • 70 Clinical Records"
+	@echo "  • 20 Invoices"
+	@echo ""
+
+create-demo-user: ## Create demo user for testing (username: demo, password: demo123)
+	@echo "$(GREEN)Creating demo user...$(NC)"
+	@docker compose exec backend python manage.py shell -c "from django.contrib.auth.models import User; u, created = User.objects.get_or_create(username='demo', defaults={'email': 'demo@example.com', 'first_name': 'Demo', 'last_name': 'User'}); u.set_password('demo123'); u.save(); print('✓ Demo user created' if created else '✓ Demo user already exists')"
+	@echo "$(YELLOW)Username: demo, Password: demo123$(NC)"
+
+seed-all: ## Seed database with all realistic data (patients, practitioners, appointments, prescriptions, records, invoices)
+	@echo "$(GREEN)Seeding all data...$(NC)"
+	@docker compose exec backend python seed_realistic_data.py
+	@echo "$(GREEN)All data seeded successfully!$(NC)"
+
 ##@ Status Commands
 
 status: ## Show status of all services

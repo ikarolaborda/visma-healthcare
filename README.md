@@ -114,8 +114,8 @@ All patient endpoints require JWT authentication via Bearer token.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/swagger/` | Interactive API documentation with authentication support |
-| GET | `/redoc/` | ReDoc API documentation |
+| GET | `/api/docs/` | Interactive API documentation with authentication support |
+| GET | `/api/redoc/` | ReDoc API documentation |
 
 ## FHIR Patient Resource
 
@@ -199,7 +199,7 @@ The Patient model conforms to FHIR R4 Patient resource structure:
 4. **Access the application**:
    - Frontend: http://localhost
    - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/swagger/
+   - API Documentation: http://localhost:8000/api/docs/
    - Django Admin: http://localhost:8000/admin/
 
 5. **Login with demo credentials**:
@@ -302,7 +302,7 @@ The collection includes:
 
 ### Using Swagger UI
 
-1. Open http://localhost:8000/swagger/
+1. Open http://localhost:8000/api/docs/
 2. Click "Authorize" button at the top right
 3. Enter your token in the format: `Bearer <access_token>`
 4. Click "Authorize" to save
@@ -562,8 +562,8 @@ docker compose exec backend pytest patients/tests/test_api.py::TestPatientCreate
 
 Interactive API documentation is available at:
 
-- **Swagger UI**: http://localhost:8000/swagger/
-- **ReDoc**: http://localhost:8000/redoc/
+- **Swagger UI**: http://localhost:8000/api/docs/
+- **ReDoc**: http://localhost:8000/api/redoc/
 
 The documentation includes:
 - All available endpoints

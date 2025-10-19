@@ -115,8 +115,9 @@ class AppointmentService(BaseService[Appointment]):
             raise ValidationError('End time must be after start time')
 
         # If practitioner or times are changing, check for conflicts
-        practitioner_id = data.get('practitioner_id', existing.practitioner_id)
-        if ('start' in data or 'end' in data or 'practitioner_id' in data):
+        # Handle both 'practitioner' (from serializer) and 'practitioner_id' (from direct updates)
+        practitioner_id = data.get('practitioner') or data.get('practitioner_id', existing.practitioner_id)
+        if ('start' in data or 'end' in data or 'practitioner' in data or 'practitioner_id' in data):
             conflicts = self.repository.find_conflicts(
                 practitioner_id=practitioner_id,
                 start=start,

@@ -27,8 +27,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # API Documentation
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
     # Authentication API
     path('api/auth/', include('authentication.urls')),
@@ -61,6 +61,7 @@ urlpatterns = [
     path('api/common/', include('common.urls')),
 ]
 
-# Serve media files during development
+# Serve media and static files during development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

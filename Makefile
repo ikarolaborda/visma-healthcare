@@ -23,7 +23,7 @@ up: ## Start all services in detached mode
 	@echo "$(GREEN)Services started!$(NC)"
 	@echo "$(BLUE)Frontend: http://localhost$(NC)"
 	@echo "$(BLUE)Backend API: http://localhost:8000$(NC)"
-	@echo "$(BLUE)API Docs: http://localhost:8000/swagger/$(NC)"
+	@echo "$(BLUE)API Docs: http://localhost:8000/api/docs/$(NC)"
 
 down: ## Stop all services
 	@echo "$(YELLOW)Stopping services...$(NC)"
@@ -181,8 +181,8 @@ setup: ## Complete setup: build containers, generate swagger, start services, mi
 	@echo "$(YELLOW)Access Points:$(NC)"
 	@echo "  Frontend:        $(BLUE)http://localhost$(NC)"
 	@echo "  Backend API:     $(BLUE)http://localhost:8000$(NC)"
-	@echo "  API Swagger:     $(BLUE)http://localhost:8000/swagger/$(NC)"
-	@echo "  API ReDoc:       $(BLUE)http://localhost:8000/redoc/$(NC)"
+	@echo "  API Docs:        $(BLUE)http://localhost:8000/api/docs/$(NC)"
+	@echo "  API ReDoc:       $(BLUE)http://localhost:8000/api/redoc/$(NC)"
 	@echo ""
 	@echo "$(YELLOW)Demo Login:$(NC)"
 	@echo "  Username: $(BLUE)demo$(NC)"
@@ -228,7 +228,7 @@ install: ## Complete installation: build, start, migrate, create demo user, and 
 	@echo "$(YELLOW)Access the application:$(NC)"
 	@echo "  Frontend:        $(BLUE)http://localhost$(NC)"
 	@echo "  Backend API:     $(BLUE)http://localhost:8000$(NC)"
-	@echo "  API Docs:        $(BLUE)http://localhost:8000/swagger/$(NC)"
+	@echo "  API Docs:        $(BLUE)http://localhost:8000/api/docs/$(NC)"
 	@echo ""
 	@echo "$(YELLOW)Demo Login Credentials:$(NC)"
 	@echo "  Username: $(BLUE)demo$(NC)"

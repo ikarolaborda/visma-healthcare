@@ -88,7 +88,7 @@ class AppointmentRepository(BaseRepository[Appointment]):
         Returns:
             List of Appointment instances
         """
-        filters = Q(start__gte=start_date, start__lte=end_date)
+        filters = Q(start__gte=start_date, start__lt=end_date)
 
         if patient_id:
             filters &= Q(patient_id=patient_id)
@@ -334,7 +334,7 @@ class AppointmentRepository(BaseRepository[Appointment]):
         Returns:
             Dictionary containing statistics
         """
-        filters = Q(start__gte=start_date, start__lte=end_date)
+        filters = Q(start__gte=start_date, start__lt=end_date)
 
         if practitioner_id:
             filters &= Q(practitioner_id=practitioner_id)

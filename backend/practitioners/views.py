@@ -56,14 +56,28 @@ class PractitionerViewSet(viewsets.ViewSet):
     )
     def list(self, request):
         """
-        List all practitioners as FHIR Practitioner resources.
+        List all practitioners as FHIR Practitioner resources in a Bundle.
 
         Returns:
-            Response: Array of FHIR Practitioner resources
+            Response: FHIR Bundle containing Practitioner resources
         """
         queryset = Practitioner.objects.all()
         serializer = FHIRPractitionerSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Create FHIR Bundle response
+        bundle = {
+            "resourceType": "Bundle",
+            "type": "searchset",
+            "total": len(serializer.data),
+            "entry": [
+                {
+                    "resource": practitioner_data
+                }
+                for practitioner_data in serializer.data
+            ]
+        }
+        
+        return Response(bundle, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_description="Create a new practitioner record",

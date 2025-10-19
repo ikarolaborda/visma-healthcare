@@ -104,7 +104,7 @@
       <!-- Patient Column -->
       <template #cell-patient="{ row }">
         <div class="text-sm font-medium text-gray-900">
-          {{ getPatientName(row) }}
+          {{ row._displayPatient }}
         </div>
       </template>
 
@@ -183,18 +183,19 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAppointmentStore } from '../stores/appointment'
 import { useI18n } from 'vue-i18n'
+import { useToast } from 'vue-toastification'
 import { storeToRefs } from 'pinia'
 import DataTable from '../components/DataTable.vue'
+import type { Appointment } from '../types/fhir'
 
 const { t } = useI18n()
-const router = useRouter()
+const toast = useToast()
 const appointmentStore = useAppointmentStore()
 const { appointments, loading, error } = storeToRefs(appointmentStore)
 
-const activeTab = ref('all')
+const activeTab = ref<string>('all')
 
 const tabs = computed(() => [
   { value: 'all', label: t('appointment.appointments') },
@@ -217,7 +218,7 @@ const columns = computed(() => [
 ])
 
 const filteredAppointments = computed(() => {
-  let appointments = []
+  let appointments: Appointment[] = []
   switch (activeTab.value) {
     case 'today':
       appointments = appointmentStore.todayAppointments
@@ -232,32 +233,33 @@ const filteredAppointments = computed(() => {
       appointments = appointmentStore.sortedAppointments
   }
 
-  // Add flattened fields for filtering
-  return appointments.map(appointment => ({
-    ...appointment,
-    patient: getPatientName(appointment),
-    date: formatDate(appointment.start),
-    time: formatTime(appointment.start),
-    duration: `${appointment.minutesDuration || calculateDuration(appointment.start, appointment.end)} ${t('appointment.minutes')}`,
-    reason: getReason(appointment),
-    status: t(`appointment.status.${appointment.status}`)
-  }))
+  // Add flattened fields for filtering and display
+  return appointments.map(appointment => {
+    const extended: any = { ...appointment }
+    extended._displayPatient = getPatientName(appointment)
+    extended._displayDate = formatDate(appointment.start)
+    extended._displayTime = formatTime(appointment.start)
+    extended._displayDuration = `${appointment.minutesDuration || calculateDuration(appointment.start, appointment.end)} ${t('appointment.minutes')}`
+    extended._displayReason = getReason(appointment)
+    extended._displayStatus = t(`appointment.status.${appointment.status}`)
+    return extended
+  })
 })
 
 const hasAppointments = computed(() => appointments.value.length > 0)
 
-const getPatientName = (appointment) => {
+const getPatientName = (appointment: Appointment): string => {
   const patientParticipant = appointment.participant?.find(
     p => p.actor?.reference?.startsWith('Patient/')
   )
   return patientParticipant?.actor?.display || 'Unknown Patient'
 }
 
-const getReason = (appointment) => {
+const getReason = (appointment: Appointment): string => {
   return appointment.reasonCode?.[0]?.text || appointment.description || 'N/A'
 }
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-US', {
@@ -267,7 +269,7 @@ const formatDate = (dateStr) => {
   })
 }
 
-const formatTime = (dateStr) => {
+const formatTime = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   const date = new Date(dateStr)
   return date.toLocaleTimeString('en-US', {
@@ -276,16 +278,16 @@ const formatTime = (dateStr) => {
   })
 }
 
-const calculateDuration = (start, end) => {
+const calculateDuration = (start: string | undefined, end: string | undefined): number | string => {
   if (!start || !end) return 'N/A'
   const startDate = new Date(start)
   const endDate = new Date(end)
-  const diffMs = endDate - startDate
+  const diffMs = endDate.getTime() - startDate.getTime()
   return Math.round(diffMs / 1000 / 60)
 }
 
-const getStatusClass = (status) => {
-  const statusClasses = {
+const getStatusClass = (status: string): string => {
+  const statusClasses: Record<string, string> = {
     proposed: 'bg-gray-100 text-gray-700',
     pending: 'bg-yellow-100 text-yellow-700',
     booked: 'bg-blue-100 text-blue-700',
@@ -299,19 +301,19 @@ const getStatusClass = (status) => {
   return statusClasses[status] || 'bg-gray-100 text-gray-700'
 }
 
-const handleCancel = async (id, patientName) => {
+const handleCancel = async (id: string, _patientName: string): Promise<void> => {
   if (confirm(t('appointment.confirmCancel'))) {
     try {
       await appointmentStore.cancelAppointment(id)
-      alert(t('appointment.cancelSuccess'))
+      toast.success(t('appointment.cancelSuccess'))
     } catch (err) {
       console.error('Cancel error:', err)
-      alert(t('appointment.cancelError'))
+      toast.error(t('appointment.cancelError'))
     }
   }
 }
 
-const clearError = () => {
+const clearError = (): void => {
   appointmentStore.clearError()
 }
 </script>

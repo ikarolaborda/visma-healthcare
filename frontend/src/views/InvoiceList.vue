@@ -91,7 +91,7 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-semibold text-gray-900">${{ formatAmount(invoice.total_gross) }}</div>
-                <div v-if="invoice.balance_due > 0" class="text-xs text-danger-600">
+                <div v-if="(invoice.balance_due || 0) > 0" class="text-xs text-danger-600">
                   Balance: ${{ formatAmount(invoice.balance_due) }}
                 </div>
               </td>
@@ -111,7 +111,7 @@
                   View
                 </router-link>
                 <button
-                  @click="handleDelete(invoice.id, invoice.invoice_number)"
+                  @click="handleDelete(invoice.id || '', invoice.invoice_number || '')"
                   class="text-danger-600 hover:text-danger-900"
                 >
                   Delete
@@ -127,9 +127,11 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useToast } from 'vue-toastification'
 import { useInvoiceStore } from '../stores/invoice'
 import { storeToRefs } from 'pinia'
 
+const toast = useToast()
 const invoiceStore = useInvoiceStore()
 const { invoices, loading } = storeToRefs(invoiceStore)
 
@@ -137,7 +139,7 @@ onMounted(() => {
   invoiceStore.fetchInvoices()
 })
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   return new Date(dateStr).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -146,13 +148,13 @@ const formatDate = (dateStr) => {
   })
 }
 
-const formatAmount = (amount) => {
+const formatAmount = (amount: number | undefined): string => {
   if (!amount) return '0.00'
-  return parseFloat(amount).toFixed(2)
+  return parseFloat(amount.toString()).toFixed(2)
 }
 
-const getStatusClass = (status) => {
-  const statusClasses = {
+const getStatusClass = (status: string): string => {
+  const statusClasses: Record<string, string> = {
     draft: 'bg-gray-100 text-gray-700',
     issued: 'bg-blue-100 text-blue-700',
     paid: 'bg-success-100 text-success-700',
@@ -162,14 +164,14 @@ const getStatusClass = (status) => {
   return statusClasses[status] || 'bg-gray-100 text-gray-700'
 }
 
-const handleDelete = async (id, invoiceNumber) => {
+const handleDelete = async (id: string, invoiceNumber: string): Promise<void> => {
   if (confirm(`Are you sure you want to delete invoice ${invoiceNumber}?`)) {
     try {
       await invoiceStore.deleteInvoice(id)
-      alert('Invoice deleted successfully')
+      toast.success('Invoice deleted successfully')
     } catch (err) {
       console.error('Delete error:', err)
-      alert('Failed to delete invoice')
+      toast.error('Failed to delete invoice')
     }
   }
 }

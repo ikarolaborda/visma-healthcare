@@ -9,16 +9,12 @@ import type {
   Appointment,
   MedicationRequest,
   Observation,
-  Invoice,
-  Bundle
+  Invoice
 } from '../types/fhir'
 import type {
   PatientFormData,
   PractitionerFormData,
-  AppointmentFormData,
-  PrescriptionFormData,
-  ClinicalRecordFormData,
-  InvoiceFormData
+  AppointmentFormData
 } from '../types'
 
 // Use relative URL so requests go through nginx proxy
@@ -321,11 +317,15 @@ export const practitionerService = {
    * Get all practitioners
    */
   async getAllPractitioners(): Promise<Practitioner[]> {
+    console.log('[PractitionerService] getAllPractitioners called')
     try {
+      console.log('[PractitionerService] Making API request to /fhir/Practitioner/')
       const response = await apiClient.get<Practitioner[]>('/fhir/Practitioner/')
+      console.log('[PractitionerService] Response received:', response.data.length, 'practitioners')
+      console.log('[PractitionerService] First practitioner:', response.data[0])
       return response.data
     } catch (error) {
-      console.error('Error fetching practitioners:', error)
+      console.error('[PractitionerService] Error fetching practitioners:', error)
       throw error
     }
   },
@@ -540,7 +540,7 @@ export function extractAppointmentFormData(fhirAppointment: Appointment): Appoin
     description: fhirAppointment.description || '',
     start: fhirAppointment.start || '',
     end: fhirAppointment.end || '',
-    minutesDuration: fhirAppointment.minutesDuration || undefined,
+    minutesDuration: fhirAppointment.minutesDuration || 30,
     comment: fhirAppointment.comment || '',
     patientId: patientParticipant?.actor?.reference?.split('/')[1] || '',
     patientName: patientParticipant?.actor?.display || '',

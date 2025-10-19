@@ -257,6 +257,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useToast } from 'vue-toastification'
 import { useAppointmentStore } from '../stores/appointment'
 import { usePatientStore } from '../stores/patient'
 import { usePractitionerStore } from '../stores/practitioner'
@@ -264,8 +265,11 @@ import { buildFHIRAppointment, extractAppointmentFormData } from '../services/ap
 import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import SearchableSelect from '../components/SearchableSelect.vue'
+import type { Patient, Practitioner } from '../types/fhir'
+import type { AppointmentFormData } from '../types'
 
 const { t } = useI18n()
+const toast = useToast()
 const router = useRouter()
 const route = useRoute()
 const appointmentStore = useAppointmentStore()
@@ -277,10 +281,10 @@ const { practitioners } = storeToRefs(practitionerStore)
 
 const isEditMode = computed(() => !!route.params.id)
 
-const formData = ref({
+const formData = ref<AppointmentFormData>({
   start: '',
   end: '',
-  minutesDuration: null,
+  minutesDuration: 30,
   status: 'proposed',
   patientId: '',
   patientName: '',
@@ -302,7 +306,7 @@ onMounted(async () => {
   // If editing, load appointment data
   if (isEditMode.value) {
     try {
-      const appointment = await appointmentStore.fetchAppointmentById(route.params.id)
+      const appointment = await appointmentStore.fetchAppointmentById(route.params.id as string)
       formData.value = extractAppointmentFormData(appointment)
     } catch (err) {
       console.error('Failed to load appointment:', err)
@@ -312,47 +316,51 @@ onMounted(async () => {
 
   // If patientId is in query params (coming from patient detail page)
   if (route.query.patientId) {
-    formData.value.patientId = route.query.patientId
+    formData.value.patientId = route.query.patientId as string
   }
 })
 
-const getPatientName = (patient) => {
+const getPatientName = (patient: Patient): string => {
   const name = patient.name?.[0]
   if (!name) return 'Unknown Patient'
   const given = name.given?.join(' ') || ''
   return `${given} ${name.family || ''}`.trim() || 'Unknown Patient'
 }
 
-const getPractitionerName = (practitioner) => {
+const getPractitionerName = (practitioner: Practitioner): string => {
   // Handle FHIR format (name[0].given, name[0].family)
   if (practitioner.name && practitioner.name.length > 0) {
     const nameObj = practitioner.name[0]
-    const prefix = nameObj.prefix?.join(' ') || ''
-    const given = nameObj.given?.join(' ') || ''
-    const family = nameObj.family || ''
-    return `${prefix} ${given} ${family}`.trim() || 'Unknown Practitioner'
+    if (nameObj) {
+      const prefix = nameObj.prefix?.join(' ') || ''
+      const given = nameObj.given?.join(' ') || ''
+      const family = nameObj.family || ''
+      return `${prefix} ${given} ${family}`.trim() || 'Unknown Practitioner'
+    }
   }
   // Fallback to legacy format
   const prefix = practitioner.prefix ? `${practitioner.prefix} ` : ''
-  return `${prefix}${practitioner.given_name} ${practitioner.family_name}`.trim() || 'Unknown Practitioner'
+  const given = practitioner.given_name || ''
+  const family = practitioner.family_name || ''
+  return `${prefix}${given} ${family}`.trim() || 'Unknown Practitioner'
 }
 
 // Computed options for SearchableSelect components
 const patientOptions = computed(() => {
   return patients.value.map(patient => ({
     label: getPatientName(patient),
-    value: patient.id
+    value: patient.id || ''
   }))
 })
 
 const practitionerOptions = computed(() => {
   return practitioners.value.map(practitioner => ({
     label: getPractitionerName(practitioner),
-    value: practitioner.id
+    value: practitioner.id || ''
   }))
 })
 
-const handleSubmit = async () => {
+const handleSubmit = async (): Promise<void> => {
   try {
     // Get patient name for display
     if (formData.value.patientId) {
@@ -365,17 +373,17 @@ const handleSubmit = async () => {
     const fhirAppointment = buildFHIRAppointment(formData.value)
 
     if (isEditMode.value) {
-      await appointmentStore.updateAppointment(route.params.id, fhirAppointment)
-      alert(t('appointment.updateSuccess'))
+      await appointmentStore.updateAppointment(route.params.id as string, fhirAppointment)
+      toast.success(t('appointment.updateSuccess'))
     } else {
       await appointmentStore.createAppointment(fhirAppointment)
-      alert(t('appointment.bookSuccess'))
+      toast.success(t('appointment.bookSuccess'))
     }
 
     router.push('/appointments')
   } catch (err) {
     console.error('Failed to save appointment:', err)
-    alert(t(isEditMode.value ? 'appointment.updateError' : 'appointment.bookError'))
+    toast.error(t(isEditMode.value ? 'appointment.updateError' : 'appointment.bookError'))
   }
 }
 </script>

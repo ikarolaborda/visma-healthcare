@@ -70,34 +70,39 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePractitionerStore } from '../stores/practitioner'
 import { useI18n } from 'vue-i18n'
+import type { Practitioner } from '../types/fhir'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const practitionerStore = usePractitionerStore()
-const practitioner = ref(null)
-const loading = ref(true)
+const practitioner = ref<Practitioner | null>(null)
+const loading = ref<boolean>(true)
 
 onMounted(async () => {
   try {
-    practitioner.value = await practitionerStore.fetchPractitionerById(route.params.id)
+    practitioner.value = await practitionerStore.fetchPractitionerById(route.params.id as string)
   } finally {
     loading.value = false
   }
 })
 
-const getPractitionerName = (p) => {
+const getPractitionerName = (p: Practitioner): string => {
   const prefix = p.prefix ? `${p.prefix} ` : ''
-  return `${prefix}${p.given_name} ${p.family_name}`.trim()
+  const given = p.given_name || ''
+  const family = p.family_name || ''
+  return `${prefix}${given} ${family}`.trim()
 }
 
-const getInitials = (p) => {
-  return `${p.given_name[0]}${p.family_name[0]}`.toUpperCase()
+const getInitials = (p: Practitioner): string => {
+  const firstInitial = p.given_name?.[0] || ''
+  const lastInitial = p.family_name?.[0] || ''
+  return `${firstInitial}${lastInitial}`.toUpperCase() || 'UP'
 }
 
-const handleDelete = async () => {
-  if (confirm(t('practitioner.confirmDelete', { name: getPractitionerName(practitioner.value) }))) {
-    await practitionerStore.deletePractitioner(practitioner.value.id)
+const handleDelete = async (): Promise<void> => {
+  if (practitioner.value && confirm(t('practitioner.confirmDelete', { name: getPractitionerName(practitioner.value) }))) {
+    await practitionerStore.deletePractitioner(practitioner.value.id || '')
     router.push('/practitioners')
   }
 }

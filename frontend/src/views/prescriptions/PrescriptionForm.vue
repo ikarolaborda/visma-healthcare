@@ -245,11 +245,13 @@ import { usePrescriptionStore } from '../../stores/prescription'
 import { usePatientStore } from '../../stores/patient'
 import { usePractitionerStore } from '../../stores/practitioner'
 import { storeToRefs } from 'pinia'
+import { useToast } from 'vue-toastification'
 import SearchableSelect from '../../components/SearchableSelect.vue'
 import type { MedicationRequest } from '../../types/fhir'
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 const prescriptionStore = usePrescriptionStore()
 const patientStore = usePatientStore()
 const practitionerStore = usePractitionerStore()
@@ -335,11 +337,14 @@ const handleSubmit = async (): Promise<void> => {
       }]
 
       if (formData.value.periodStart || formData.value.periodEnd) {
-        prescription.dosageInstruction[0].timing = {
-          repeat: {
-            boundsPeriod: {
-              start: formData.value.periodStart,
-              end: formData.value.periodEnd
+        const dosageInstruction = prescription.dosageInstruction?.[0]
+        if (dosageInstruction) {
+          dosageInstruction.timing = {
+            repeat: {
+              boundsPeriod: {
+                start: formData.value.periodStart,
+                end: formData.value.periodEnd
+              }
             }
           }
         }
@@ -354,13 +359,16 @@ const handleSubmit = async (): Promise<void> => {
 
     if (isEditMode.value && route.params.id) {
       await prescriptionStore.updatePrescription(route.params.id as string, prescription)
+      toast.success('Prescription updated successfully')
     } else {
       await prescriptionStore.createPrescription(prescription)
+      toast.success('Prescription created successfully')
     }
 
     router.push('/prescriptions')
   } catch (err) {
     console.error('Failed to save prescription:', err)
+    toast.error(isEditMode.value ? 'Failed to update prescription' : 'Failed to create prescription')
   }
 }
 </script>

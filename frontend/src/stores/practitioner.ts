@@ -13,6 +13,8 @@ interface PractitionerState {
   error: string | null
 }
 
+console.log('[PractitionerStore] Store definition loading')
+
 export const usePractitionerStore = defineStore('practitioner', {
   state: (): PractitionerState => ({
     practitioners: [],
@@ -26,6 +28,9 @@ export const usePractitionerStore = defineStore('practitioner', {
      * Get practitioners sorted by name
      */
     sortedPractitioners: (state): Practitioner[] => {
+      if (!Array.isArray(state.practitioners)) {
+        return []
+      }
       return [...state.practitioners].sort((a, b) => {
         const nameA = `${a.name?.[0]?.given?.[0] || ''} ${a.name?.[0]?.family || ''}`.toLowerCase()
         const nameB = `${b.name?.[0]?.given?.[0] || ''} ${b.name?.[0]?.family || ''}`.toLowerCase()
@@ -37,6 +42,9 @@ export const usePractitionerStore = defineStore('practitioner', {
      * Get only active practitioners
      */
     activePractitioners: (state): Practitioner[] => {
+      if (!Array.isArray(state.practitioners)) {
+        return []
+      }
       return state.practitioners.filter(p => p.active)
     },
 
@@ -45,6 +53,9 @@ export const usePractitionerStore = defineStore('practitioner', {
      */
     getPractitionersBySpecialization: (state) => {
       return (specialization: string): Practitioner[] => {
+        if (!Array.isArray(state.practitioners)) {
+          return []
+        }
         return state.practitioners.filter(
           p => p.specialization?.toLowerCase().includes(specialization.toLowerCase())
         )
@@ -56,6 +67,9 @@ export const usePractitionerStore = defineStore('practitioner', {
      */
     getPractitionerById: (state) => {
       return (id: string): Practitioner | undefined => {
+        if (!Array.isArray(state.practitioners)) {
+          return undefined
+        }
         return state.practitioners.find(p => p.id === id)
       }
     },
@@ -81,17 +95,22 @@ export const usePractitionerStore = defineStore('practitioner', {
      * Fetch all practitioners
      */
     async fetchPractitioners(): Promise<void> {
+      console.log('[PractitionerStore] fetchPractitioners called')
       this.loading = true
       this.error = null
       try {
         const practitioners = await practitionerService.getAllPractitioners()
+        console.log('[PractitionerStore] Fetched practitioners:', practitioners.length, 'practitioners')
+        console.log('[PractitionerStore] First practitioner:', practitioners[0])
         this.practitioners = practitioners
+        console.log('[PractitionerStore] Store updated, practitioners.length:', this.practitioners.length)
       } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to fetch practitioners'
-        console.error('Error fetching practitioners:', error)
+        console.error('[PractitionerStore] Error fetching practitioners:', error)
         throw error
       } finally {
         this.loading = false
+        console.log('[PractitionerStore] fetchPractitioners complete, loading:', this.loading)
       }
     },
 

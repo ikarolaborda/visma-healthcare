@@ -26,6 +26,9 @@ export const useAppointmentStore = defineStore('appointment', {
      * Get all appointments sorted by start date (descending)
      */
     sortedAppointments: (state): Appointment[] => {
+      if (!Array.isArray(state.appointments)) {
+        return []
+      }
       return [...state.appointments].sort((a, b) => {
         const dateA = new Date(a.start || 0)
         const dateB = new Date(b.start || 0)
@@ -37,6 +40,9 @@ export const useAppointmentStore = defineStore('appointment', {
      * Get upcoming appointments (start date in the future)
      */
     upcomingAppointments: (state): Appointment[] => {
+      if (!Array.isArray(state.appointments)) {
+        return []
+      }
       const now = new Date()
       return state.appointments
         .filter(apt => new Date(apt.start || 0) >= now && apt.status !== 'cancelled')
@@ -47,6 +53,9 @@ export const useAppointmentStore = defineStore('appointment', {
      * Get past appointments (start date in the past)
      */
     pastAppointments: (state): Appointment[] => {
+      if (!Array.isArray(state.appointments)) {
+        return []
+      }
       const now = new Date()
       return state.appointments
         .filter(apt => new Date(apt.start || 0) < now)
@@ -57,6 +66,11 @@ export const useAppointmentStore = defineStore('appointment', {
      * Get today's appointments
      */
     todayAppointments: (state): Appointment[] => {
+      // Ensure appointments is an array
+      if (!Array.isArray(state.appointments)) {
+        return []
+      }
+
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       const tomorrow = new Date(today)
@@ -74,24 +88,36 @@ export const useAppointmentStore = defineStore('appointment', {
      * Get appointment by ID
      */
     getAppointmentById: (state) => {
-      return (id: string): Appointment | undefined => state.appointments.find((a) => a.id === id)
+      return (id: string): Appointment | undefined => {
+        if (!Array.isArray(state.appointments)) {
+          return undefined
+        }
+        return state.appointments.find((a) => a.id === id)
+      }
     },
 
     /**
      * Get appointments by patient ID
      */
     getAppointmentsByPatient: (state) => {
-      return (patientId: string): Appointment[] => state.appointments.filter(apt => {
-        return apt.participant?.some(p =>
-          p.actor?.reference === `Patient/${patientId}`
-        )
-      })
+      return (patientId: string): Appointment[] => {
+        if (!Array.isArray(state.appointments)) {
+          return []
+        }
+        return state.appointments.filter(apt => {
+          return apt.participant?.some(p =>
+            p.actor?.reference === `Patient/${patientId}`
+          )
+        })
+      }
     },
 
     /**
      * Check if appointments are loaded
      */
-    hasAppointments: (state): boolean => state.appointments.length > 0,
+    hasAppointments: (state): boolean => {
+      return Array.isArray(state.appointments) && state.appointments.length > 0
+    },
   },
 
   actions: {

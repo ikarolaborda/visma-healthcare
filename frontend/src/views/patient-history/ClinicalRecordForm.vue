@@ -287,11 +287,13 @@ import { useClinicalRecordStore } from '../../stores/clinicalRecord'
 import { usePatientStore } from '../../stores/patient'
 import { usePractitionerStore } from '../../stores/practitioner'
 import { storeToRefs } from 'pinia'
+import { useToast } from 'vue-toastification'
 import SearchableSelect from '../../components/SearchableSelect.vue'
 import type { Observation } from '../../types/fhir'
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 const recordStore = useClinicalRecordStore()
 const patientStore = usePatientStore()
 const practitionerStore = usePractitionerStore()
@@ -404,13 +406,16 @@ const handleSubmit = async (): Promise<void> => {
 
     if (isEditMode.value && route.params.id) {
       await recordStore.updateRecord(route.params.id as string, observation)
+      toast.success('Clinical record updated successfully')
     } else {
       await recordStore.createRecord(observation)
+      toast.success('Clinical record created successfully')
     }
 
     router.push('/patient-history')
   } catch (err) {
     console.error('Failed to save clinical record:', err)
+    toast.error(isEditMode.value ? 'Failed to update clinical record' : 'Failed to create clinical record')
   }
 }
 </script>

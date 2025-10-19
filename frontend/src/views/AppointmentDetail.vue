@@ -199,22 +199,24 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useAppointmentStore } from '../stores/appointment'
 import { useI18n } from 'vue-i18n'
+import { useToast } from 'vue-toastification'
 import { storeToRefs } from 'pinia'
+import type { Appointment } from '../types/fhir'
 
 const { t } = useI18n()
-const router = useRouter()
+const toast = useToast()
 const route = useRoute()
 const appointmentStore = useAppointmentStore()
 const { loading, error } = storeToRefs(appointmentStore)
 
-const appointment = ref(null)
+const appointment = ref<Appointment | null>(null)
 
 onMounted(async () => {
   try {
-    appointment.value = await appointmentStore.fetchAppointmentById(route.params.id)
+    appointment.value = await appointmentStore.fetchAppointmentById(route.params.id as string)
   } catch (error) {
     console.error('Error fetching appointment:', error)
   }
@@ -230,21 +232,21 @@ const hasDetails = computed(() => {
 
 const getPatientInfo = () => {
   const patientParticipant = appointment.value?.participant?.find(
-    p => p.actor?.reference?.startsWith('Patient/')
+    (p: any) => p.actor?.reference?.startsWith('Patient/')
   )
   return patientParticipant?.actor?.display || 'N/A'
 }
 
 const getPatientId = () => {
   const patientParticipant = appointment.value?.participant?.find(
-    p => p.actor?.reference?.startsWith('Patient/')
+    (p: any) => p.actor?.reference?.startsWith('Patient/')
   )
   return patientParticipant?.actor?.reference?.split('/')[1] || null
 }
 
 const getPractitionerInfo = () => {
   const practitionerParticipant = appointment.value?.participant?.find(
-    p => p.actor?.reference?.startsWith('Practitioner/')
+    (p: any) => p.actor?.reference?.startsWith('Practitioner/')
   )
   return practitionerParticipant?.actor?.display || null
 }
@@ -257,7 +259,7 @@ const getReason = () => {
   return appointment.value?.reasonCode?.[0]?.text || ''
 }
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-US', {
@@ -267,7 +269,7 @@ const formatDate = (dateStr) => {
   })
 }
 
-const formatDateTime = (dateStr) => {
+const formatDateTime = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   const date = new Date(dateStr)
   return date.toLocaleString('en-US', {
@@ -279,16 +281,16 @@ const formatDateTime = (dateStr) => {
   })
 }
 
-const calculateDuration = (start, end) => {
+const calculateDuration = (start: string | undefined, end: string | undefined): number | string => {
   if (!start || !end) return 'N/A'
   const startDate = new Date(start)
   const endDate = new Date(end)
-  const diffMs = endDate - startDate
+  const diffMs = endDate.getTime() - startDate.getTime()
   return Math.round(diffMs / 1000 / 60)
 }
 
-const getStatusClass = (status) => {
-  const statusClasses = {
+const getStatusClass = (status: string): string => {
+  const statusClasses: Record<string, string> = {
     proposed: 'bg-gray-100 text-gray-700',
     pending: 'bg-yellow-100 text-yellow-700',
     booked: 'bg-blue-100 text-blue-700',
@@ -304,22 +306,22 @@ const getStatusClass = (status) => {
 
 const handleCheckIn = async () => {
   try {
-    await appointmentStore.checkInAppointment(route.params.id)
-    appointment.value = await appointmentStore.fetchAppointmentById(route.params.id)
-    alert(t('appointment.checkInSuccess'))
+    await appointmentStore.checkInAppointment(route.params.id as string)
+    appointment.value = await appointmentStore.fetchAppointmentById(route.params.id as string)
+    toast.success(t('appointment.checkInSuccess'))
   } catch (error) {
-    alert(t('appointment.checkInError'))
+    toast.error(t('appointment.checkInError'))
   }
 }
 
 const handleCancel = async () => {
   if (confirm(t('appointment.confirmCancel'))) {
     try {
-      await appointmentStore.cancelAppointment(route.params.id)
-      appointment.value = await appointmentStore.fetchAppointmentById(route.params.id)
-      alert(t('appointment.cancelSuccess'))
+      await appointmentStore.cancelAppointment(route.params.id as string)
+      appointment.value = await appointmentStore.fetchAppointmentById(route.params.id as string)
+      toast.success(t('appointment.cancelSuccess'))
     } catch (error) {
-      alert(t('appointment.cancelError'))
+      toast.error(t('appointment.cancelError'))
     }
   }
 }

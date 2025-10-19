@@ -37,6 +37,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     """
 
     permission_classes = [IsAuthenticated]
+    pagination_class = None  # Disable pagination to match Patient and Practitioner endpoints
     service = AppointmentService()
 
     def get_queryset(self):
@@ -100,13 +101,13 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         """
         Return appropriate serializer based on format query parameter.
 
-        - format=fhir: Returns FHIRAppointmentSerializer
-        - Default: Returns AppointmentSerializer
+        - format=standard: Returns AppointmentSerializer (Django format)
+        - Default: Returns FHIRAppointmentSerializer (FHIR R4 format)
         """
-        format_param = self.request.query_params.get('format', 'standard')
-        if format_param.lower() == 'fhir':
-            return FHIRAppointmentSerializer
-        return AppointmentSerializer
+        format_param = self.request.query_params.get('format', 'fhir')
+        if format_param.lower() == 'standard':
+            return AppointmentSerializer
+        return FHIRAppointmentSerializer
 
     @swagger_auto_schema(
         operation_description="Create a new appointment",

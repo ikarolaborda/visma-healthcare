@@ -88,6 +88,7 @@ export interface Patient extends FHIRResource {
   birthDate?: string
   address?: Address[]
   identifier?: Identifier[]
+  created_at?: string
 }
 
 // Practitioner Resource
@@ -104,6 +105,12 @@ export interface Practitioner extends FHIRResource {
   // Custom fields (non-standard FHIR)
   specialization?: string
   years_of_experience?: number
+  npi?: string
+  email?: string
+  phone?: string
+  prefix?: string
+  given_name?: string
+  family_name?: string
 }
 
 export interface PractitionerQualification {
@@ -179,6 +186,7 @@ export interface MedicationRequest extends FHIRResource {
   dosage_text?: string
   dosage_period_start?: string
   dosage_period_end?: string
+  authored_on?: string
 }
 
 export interface Annotation {
@@ -319,6 +327,15 @@ export interface Observation extends FHIRResource {
   device?: Reference
   referenceRange?: ObservationReferenceRange[]
   component?: ObservationComponent[]
+  // Custom fields for simplified display
+  record_type?: string
+  title?: string
+  patient_name?: string
+  recorded_by_name?: string
+  recorded_date?: string
+  severity?: string
+  value_quantity?: number
+  value_unit?: string
 }
 
 export interface SampledData {
@@ -377,6 +394,11 @@ export interface Invoice extends FHIRResource {
   totalGross?: Money
   paymentTerms?: string
   note?: Annotation[]
+  // Custom fields for simplified display
+  invoice_number?: string
+  patient_name?: string
+  total_gross?: number
+  balance_due?: number
 }
 
 export interface InvoiceParticipant {

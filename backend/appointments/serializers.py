@@ -6,6 +6,7 @@ including both standard Django serialization and FHIR R4 compliant serialization
 """
 
 from datetime import datetime
+from django.utils import timezone
 from rest_framework import serializers
 from fhir.resources.appointment import Appointment as FHIRAppointment
 from fhir.resources.reference import Reference
@@ -214,6 +215,15 @@ class FHIRAppointmentSerializer(serializers.Serializer):
         try:
             fhir_appointment = FHIRAppointment(**fhir_data)
             result = fhir_appointment.dict(exclude_none=True)
+
+            # Ensure datetime fields are strings (fhir.resources may convert them back to datetime objects)
+            if 'start' in result and instance.start:
+                result['start'] = instance.start.isoformat()
+            if 'end' in result and instance.end:
+                result['end'] = instance.end.isoformat()
+            if 'created' in result and instance.created:
+                result['created'] = instance.created.isoformat()
+
             return result
         except Exception as e:
             # If FHIR validation fails, return the data dict directly
@@ -296,15 +306,25 @@ class FHIRAppointmentSerializer(serializers.Serializer):
         start_str = data['start']
         end_str = data['end']
 
-        # Parse datetime strings
+        # Parse datetime strings and ensure timezone-aware
         try:
             if isinstance(start_str, str):
-                appointment_data['start'] = datetime.fromisoformat(start_str.replace('Z', '+00:00'))
+                parsed_start = datetime.fromisoformat(start_str.replace('Z', '+00:00'))
+                # Ensure timezone-aware
+                if timezone.is_naive(parsed_start):
+                    appointment_data['start'] = timezone.make_aware(parsed_start)
+                else:
+                    appointment_data['start'] = parsed_start
             else:
                 appointment_data['start'] = start_str
 
             if isinstance(end_str, str):
-                appointment_data['end'] = datetime.fromisoformat(end_str.replace('Z', '+00:00'))
+                parsed_end = datetime.fromisoformat(end_str.replace('Z', '+00:00'))
+                # Ensure timezone-aware
+                if timezone.is_naive(parsed_end):
+                    appointment_data['end'] = timezone.make_aware(parsed_end)
+                else:
+                    appointment_data['end'] = parsed_end
             else:
                 appointment_data['end'] = end_str
         except ValueError as e:

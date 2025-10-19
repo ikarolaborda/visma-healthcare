@@ -32,7 +32,7 @@
       <!-- Statistics Cards -->
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Total Patients Card -->
-        <div class="glass rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+        <router-link to="/patients" class="glass rounded-2xl shadow-lg p-6 hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer">
           <div class="flex items-center">
             <div class="flex-shrink-0 p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
               <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,10 +44,10 @@
               <p class="text-2xl font-bold text-gray-900">{{ stats.totalPatients }}</p>
             </div>
           </div>
-        </div>
+        </router-link>
 
         <!-- Total Practitioners Card -->
-        <div class="glass rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+        <router-link to="/practitioners" class="glass rounded-2xl shadow-lg p-6 hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer">
           <div class="flex items-center">
             <div class="flex-shrink-0 p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
               <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,10 +59,10 @@
               <p class="text-2xl font-bold text-gray-900">{{ stats.totalPractitioners }}</p>
             </div>
           </div>
-        </div>
+        </router-link>
 
         <!-- Total Appointments Card -->
-        <div class="glass rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+        <router-link to="/appointments" class="glass rounded-2xl shadow-lg p-6 hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer">
           <div class="flex items-center">
             <div class="flex-shrink-0 p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
               <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,10 +74,10 @@
               <p class="text-2xl font-bold text-gray-900">{{ stats.totalAppointments }}</p>
             </div>
           </div>
-        </div>
+        </router-link>
 
         <!-- Today's Appointments Card -->
-        <div class="glass rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+        <router-link to="/appointments" class="glass rounded-2xl shadow-lg p-6 hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer">
           <div class="flex items-center">
             <div class="flex-shrink-0 p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
               <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +89,7 @@
               <p class="text-2xl font-bold text-gray-900">{{ stats.todayAppointments }}</p>
             </div>
           </div>
-        </div>
+        </router-link>
       </div>
 
       <!-- Charts Row -->
@@ -197,6 +197,7 @@ import { useAppointmentStore } from '../stores/appointment'
 import { usePractitionerStore } from '../stores/practitioner'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title, Filler } from 'chart.js'
 import { Doughnut, Pie, Line } from 'vue-chartjs'
+import type { Patient, Appointment, HumanName } from '../types/fhir'
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title, Filler)
 
@@ -205,8 +206,8 @@ const patientStore = usePatientStore()
 const appointmentStore = useAppointmentStore()
 const practitionerStore = usePractitionerStore()
 
-const loading = ref(true)
-const error = ref(null)
+const loading = ref<boolean>(true)
+const error = ref<string | null>(null)
 
 onMounted(async () => {
   try {
@@ -224,21 +225,23 @@ onMounted(async () => {
 })
 
 const stats = computed(() => ({
-  totalPatients: patientStore.patients.length,
-  totalPractitioners: practitionerStore.practitioners.length,
-  totalAppointments: appointmentStore.appointments.length,
+  totalPatients: Array.isArray(patientStore.patients) ? patientStore.patients.length : 0,
+  totalPractitioners: Array.isArray(practitionerStore.practitioners) ? practitionerStore.practitioners.length : 0,
+  totalAppointments: Array.isArray(appointmentStore.appointments) ? appointmentStore.appointments.length : 0,
   todayAppointments: appointmentStore.todayAppointments.length
 }))
 
 const appointmentsByStatusData = computed(() => {
-  const statusCounts = {}
-  appointmentStore.appointments.forEach(apt => {
+  const statusCounts: Record<string, number> = {}
+  const appointments = Array.isArray(appointmentStore.appointments) ? appointmentStore.appointments : []
+
+  appointments.forEach(apt => {
     const status = apt.status || 'unknown'
     statusCounts[status] = (statusCounts[status] || 0) + 1
   })
 
   const labels = Object.keys(statusCounts).map(status => t(`appointment.status.${status}`))
-  const data = Object.values(statusCounts)
+  const data = Object.values(statusCounts) as number[]
 
   return {
     labels,
@@ -258,14 +261,16 @@ const appointmentsByStatusData = computed(() => {
 })
 
 const genderDistributionData = computed(() => {
-  const genderCounts = {}
-  patientStore.patients.forEach(patient => {
+  const genderCounts: Record<string, number> = {}
+  const patients = Array.isArray(patientStore.patients) ? patientStore.patients : []
+
+  patients.forEach(patient => {
     const gender = patient.gender || 'unknown'
     genderCounts[gender] = (genderCounts[gender] || 0) + 1
   })
 
   const labels = Object.keys(genderCounts).map(gender => t(`patient.${gender}`))
-  const data = Object.values(genderCounts)
+  const data = Object.values(genderCounts) as number[]
 
   return {
     labels,
@@ -283,23 +288,28 @@ const genderDistributionData = computed(() => {
 })
 
 const appointmentsTimelineData = computed(() => {
-  const last7Days = []
-  const counts = {}
+  const last7Days: string[] = []
+  const counts: Record<string, number> = {}
 
   // Generate last 7 days
   for (let i = 6; i >= 0; i--) {
     const date = new Date()
     date.setDate(date.getDate() - i)
-    const dateStr = date.toISOString().split('T')[0]
-    last7Days.push(dateStr)
-    counts[dateStr] = 0
+    const dateStr = date.toISOString().split('T')[0] || ''
+    if (dateStr) {
+      last7Days.push(dateStr)
+      counts[dateStr] = 0
+    }
   }
 
   // Count appointments per day
-  appointmentStore.appointments.forEach(apt => {
-    const aptDate = apt.start ? apt.start.split('T')[0] : null
-    if (aptDate && counts.hasOwnProperty(aptDate)) {
-      counts[aptDate]++
+  const appointments = Array.isArray(appointmentStore.appointments) ? appointmentStore.appointments : []
+  appointments.forEach(apt => {
+    if (apt.start) {
+      const aptDate = apt.start.substring(0, 10)
+      if (aptDate && aptDate in counts) {
+        counts[aptDate] = (counts[aptDate] || 0) + 1
+      }
     }
   })
 
@@ -307,7 +317,7 @@ const appointmentsTimelineData = computed(() => {
     labels: last7Days.map(date => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
     datasets: [{
       label: t('appointment.appointments'),
-      data: last7Days.map(date => counts[date]),
+      data: last7Days.map(date => counts[date] ?? 0),
       borderColor: 'rgba(59, 130, 246, 1)',
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
       tension: 0.4,
@@ -321,7 +331,7 @@ const chartOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: 'bottom'
+      position: 'bottom' as const
     }
   }
 }
@@ -345,39 +355,65 @@ const lineChartOptions = {
 }
 
 const recentPatients = computed(() => {
-  return [...patientStore.patients]
-    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+  const patients = Array.isArray(patientStore.patients) ? patientStore.patients : []
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+  return [...patients]
+    .filter(p => {
+      if (!p.created_at) return false
+      const createdDate = new Date(p.created_at)
+      return createdDate >= sevenDaysAgo
+    })
+    .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
     .slice(0, 5)
 })
 
 const recentAppointments = computed(() => {
-  return [...appointmentStore.appointments]
-    .sort((a, b) => new Date(b.start || 0) - new Date(a.start || 0))
+  const appointments = Array.isArray(appointmentStore.appointments) ? appointmentStore.appointments : []
+  return [...appointments]
+    .sort((a, b) => new Date(b.start || 0).getTime() - new Date(a.start || 0).getTime())
     .slice(0, 5)
 })
 
-const getPatientName = (patient) => {
+const getPatientName = (patient: Patient): string => {
   const name = patient.name?.[0]
   if (!name) return 'Unknown Patient'
   const given = name.given?.join(' ') || ''
   return `${given} ${name.family || ''}`.trim() || 'Unknown Patient'
 }
 
-const getInitials = (name) => {
+const getInitials = (name: HumanName | undefined): string => {
   if (!name) return 'UP'
   const firstInitial = name.given?.[0]?.[0] || ''
   const lastInitial = name.family?.[0] || ''
   return (firstInitial + lastInitial).toUpperCase() || 'UP'
 }
 
-const getAppointmentPatientName = (appointment) => {
+const getAppointmentPatientName = (appointment: Appointment): string => {
   const patientParticipant = appointment.participant?.find(
     p => p.actor?.reference?.startsWith('Patient/')
   )
-  return patientParticipant?.actor?.display || 'Unknown Patient'
+
+  // Try to get display name first
+  if (patientParticipant?.actor?.display) {
+    return patientParticipant.actor.display
+  }
+
+  // Extract patient ID from reference and lookup in store
+  const reference = patientParticipant?.actor?.reference
+  if (reference) {
+    const patientId = reference.replace('Patient/', '')
+    const patient = patientStore.patients.find(p => p.id === patientId)
+    if (patient) {
+      return getPatientName(patient)
+    }
+  }
+
+  return 'Unknown Patient'
 }
 
-const formatDateTime = (dateStr) => {
+const formatDateTime = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   const date = new Date(dateStr)
   return date.toLocaleString('en-US', {
@@ -388,8 +424,8 @@ const formatDateTime = (dateStr) => {
   })
 }
 
-const getStatusClass = (status) => {
-  const statusClasses = {
+const getStatusClass = (status: string): string => {
+  const statusClasses: Record<string, string> = {
     proposed: 'bg-gray-100 text-gray-700',
     pending: 'bg-yellow-100 text-yellow-700',
     booked: 'bg-blue-100 text-blue-700',

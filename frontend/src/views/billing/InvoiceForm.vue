@@ -231,6 +231,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useInvoiceStore } from '../../stores/invoice'
 import { usePatientStore } from '../../stores/patient'
 import { storeToRefs } from 'pinia'
+import { useToast } from 'vue-toastification'
 import SearchableSelect from '../../components/SearchableSelect.vue'
 import type { Invoice } from '../../types/fhir'
 
@@ -241,6 +242,7 @@ interface LineItem {
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 const invoiceStore = useInvoiceStore()
 const patientStore = usePatientStore()
 
@@ -335,13 +337,16 @@ const handleSubmit = async (): Promise<void> => {
 
     if (isEditMode.value && route.params.id) {
       await invoiceStore.updateInvoice(route.params.id as string, invoice)
+      toast.success('Invoice updated successfully')
     } else {
       await invoiceStore.createInvoice(invoice)
+      toast.success('Invoice created successfully')
     }
 
     router.push('/billing')
   } catch (err) {
     console.error('Failed to save invoice:', err)
+    toast.error(isEditMode.value ? 'Failed to update invoice' : 'Failed to create invoice')
   }
 }
 </script>

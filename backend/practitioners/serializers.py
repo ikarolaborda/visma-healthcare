@@ -187,6 +187,10 @@ class FHIRPractitionerSerializer(serializers.Serializer):
         fhir_practitioner = FHIRPractitioner(**fhir_data)
         result = fhir_practitioner.dict(exclude_none=True)
 
+        # Ensure birthDate is a string (fhir.resources may convert it back to date object)
+        if 'birthDate' in result and instance.birth_date:
+            result['birthDate'] = instance.birth_date.isoformat()
+
         # Add custom extension for specialization (not standard FHIR but useful)
         if instance.specialization:
             result['specialization'] = instance.specialization

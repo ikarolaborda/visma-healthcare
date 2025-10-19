@@ -80,15 +80,39 @@ import { useRoute, useRouter } from 'vue-router'
 import { usePractitionerStore } from '../stores/practitioner'
 import { buildPractitioner, extractPractitionerFormData } from '../services/api'
 import { useI18n } from 'vue-i18n'
+import { useToast } from 'vue-toastification'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
+const toast = useToast()
 const practitionerStore = usePractitionerStore()
 const isEditMode = computed(() => !!route.params.id)
-const saving = ref(false)
+const saving = ref<boolean>(false)
 
-const formData = ref({
+interface PractitionerFormData {
+  prefix: string
+  givenName: string
+  familyName: string
+  middleName: string
+  gender: string
+  birthDate: string
+  npi: string
+  licenseNumber: string
+  specialization: string
+  qualification: string
+  yearsOfExperience: number
+  addressLine: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  email: string
+  phone: string
+  active: boolean
+}
+
+const formData = ref<PractitionerFormData>({
   prefix: '',
   givenName: '',
   familyName: '',
@@ -112,23 +136,25 @@ const formData = ref({
 
 onMounted(async () => {
   if (isEditMode.value) {
-    const practitioner = await practitionerStore.fetchPractitionerById(route.params.id)
+    const practitioner = await practitionerStore.fetchPractitionerById(route.params.id as string)
     Object.assign(formData.value, extractPractitionerFormData(practitioner))
   }
 })
 
-const handleSubmit = async () => {
+const handleSubmit = async (): Promise<void> => {
   saving.value = true
   try {
     const practitionerData = buildPractitioner(formData.value)
     if (isEditMode.value) {
-      await practitionerStore.updatePractitioner(route.params.id, practitionerData)
+      await practitionerStore.updatePractitioner(route.params.id as string, practitionerData)
+      toast.success(t('practitioner.updateSuccess'))
     } else {
       await practitionerStore.createPractitioner(practitionerData)
+      toast.success(t('practitioner.createSuccess'))
     }
     router.push('/practitioners')
   } catch (error) {
-    alert(t('practitioner.saveError'))
+    toast.error(t('practitioner.saveError'))
   } finally {
     saving.value = false
   }

@@ -22,6 +22,9 @@ import InvoiceDetail from '../views/billing/InvoiceDetail.vue'
 import ClinicalRecordList from '../views/ClinicalRecordList.vue'
 import ClinicalRecordForm from '../views/patient-history/ClinicalRecordForm.vue'
 import ClinicalRecordDetail from '../views/patient-history/ClinicalRecordDetail.vue'
+import ReportList from '../views/ReportList.vue'
+import Profile from '../views/Profile.vue'
+import Settings from '../views/Settings.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 
@@ -292,6 +295,37 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: true
     },
   },
+
+  // Reports routes
+  {
+    path: '/reports',
+    name: 'ReportList',
+    component: ReportList,
+    meta: {
+      title: 'Reports',
+      requiresAuth: true
+    },
+  },
+
+  // User Profile and Settings routes
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: Profile,
+    meta: {
+      title: 'User Profile',
+      requiresAuth: true
+    },
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: Settings,
+    meta: {
+      title: 'Account Settings',
+      requiresAuth: true
+    },
+  },
 ]
 
 const router = createRouter({
@@ -302,7 +336,7 @@ const router = createRouter({
 // Navigation guards for authentication
 router.beforeEach(async (
   to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) => {
   // Update page title
@@ -321,7 +355,6 @@ router.beforeEach(async (
   }
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
   const isAuthenticated = authStore.isAuthenticated
 
   // Allow login/register pages explicitly to avoid redirect loops

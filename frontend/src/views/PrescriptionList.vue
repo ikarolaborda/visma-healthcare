@@ -126,25 +126,26 @@
 import { ref, onMounted } from 'vue'
 import { usePrescriptionStore } from '../stores/prescription'
 import { storeToRefs } from 'pinia'
+import type { MedicationRequest } from '../types/fhir'
 
 const prescriptionStore = usePrescriptionStore()
 const { prescriptions, loading } = storeToRefs(prescriptionStore)
 
-const selectedPrescription = ref(null)
+const selectedPrescription = ref<MedicationRequest | null>(null)
 
 onMounted(() => {
   prescriptionStore.fetchPrescriptions()
 })
 
-const showPrescriptionDetails = (prescription) => {
+const showPrescriptionDetails = (prescription: MedicationRequest): void => {
   selectedPrescription.value = prescription
 }
 
-const closePrescriptionDetails = () => {
+const closePrescriptionDetails = (): void => {
   selectedPrescription.value = null
 }
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-US', {

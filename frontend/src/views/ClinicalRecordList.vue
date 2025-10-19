@@ -59,10 +59,11 @@
           <div class="flex-1">
             <div class="flex items-center space-x-3 mb-3">
               <span
+                v-if="record.category && record.category.length > 0"
                 class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                :class="getTypeClass(record.record_type)"
+                :class="getTypeClass(record.category[0]?.coding?.[0]?.display || '')"
               >
-                {{ formatType(record.record_type) }}
+                {{ formatType(record.category[0]?.coding?.[0]?.display || '') }}
               </span>
               <span
                 class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
@@ -71,33 +72,33 @@
                 {{ record.status }}
               </span>
               <span
-                v-if="record.severity"
+                v-if="record.interpretation && record.interpretation.length > 0"
                 class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                :class="getSeverityClass(record.severity)"
+                :class="getSeverityClass(record.interpretation[0]?.coding?.[0]?.display || '')"
               >
-                {{ record.severity }}
+                {{ record.interpretation[0]?.coding?.[0]?.display }}
               </span>
             </div>
 
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ record.title }}</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ record.code?.text || '' }}</h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
               <div>
-                <span class="font-medium">Patient:</span> {{ record.patient_name || 'N/A' }}
+                <span class="font-medium">Patient:</span> {{ record.subject?.display || 'N/A' }}
               </div>
               <div>
-                <span class="font-medium">Recorded by:</span> {{ record.recorded_by_name || 'N/A' }}
+                <span class="font-medium">Recorded by:</span> {{ record.performer?.[0]?.display || 'N/A' }}
               </div>
               <div>
-                <span class="font-medium">Date:</span> {{ formatDate(record.recorded_date) }}
+                <span class="font-medium">Date:</span> {{ formatDate(record.effectiveDateTime) }}
               </div>
-              <div v-if="record.value_quantity">
-                <span class="font-medium">Value:</span> {{ record.value_quantity }} {{ record.value_unit }}
+              <div v-if="record.valueQuantity">
+                <span class="font-medium">Value:</span> {{ record.valueQuantity.value }} {{ record.valueQuantity.unit }}
               </div>
             </div>
 
-            <p v-if="record.note" class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">
-              {{ record.note }}
+            <p v-if="record.note && record.note.length > 0" class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">
+              {{ record.note.map(n => n.text).join('; ') }}
             </p>
           </div>
 
@@ -113,7 +114,7 @@
               </svg>
             </router-link>
             <button
-              @click="handleDelete(record.id, record.title)"
+              @click="handleDelete(record.id, record.code?.text)"
               class="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
               title="Delete"
             >
@@ -130,9 +131,11 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useToast } from 'vue-toastification'
 import { useClinicalRecordStore } from '../stores/clinicalRecord'
 import { storeToRefs } from 'pinia'
 
+const toast = useToast()
 const recordStore = useClinicalRecordStore()
 const { records, loading } = storeToRefs(recordStore)
 
@@ -140,7 +143,7 @@ onMounted(() => {
   recordStore.fetchRecords()
 })
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   return new Date(dateStr).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -149,8 +152,8 @@ const formatDate = (dateStr) => {
   })
 }
 
-const formatType = (type) => {
-  const typeMap = {
+const formatType = (type: string): string => {
+  const typeMap: Record<string, string> = {
     'condition': 'Condition/Diagnosis',
     'observation': 'Observation',
     'allergy': 'Allergy',
@@ -160,8 +163,8 @@ const formatType = (type) => {
   return typeMap[type] || type
 }
 
-const getTypeClass = (type) => {
-  const typeClasses = {
+const getTypeClass = (type: string): string => {
+  const typeClasses: Record<string, string> = {
     'condition': 'bg-red-100 text-red-700',
     'observation': 'bg-blue-100 text-blue-700',
     'allergy': 'bg-orange-100 text-orange-700',
@@ -171,8 +174,8 @@ const getTypeClass = (type) => {
   return typeClasses[type] || 'bg-gray-100 text-gray-700'
 }
 
-const getStatusClass = (status) => {
-  const statusClasses = {
+const getStatusClass = (status: string): string => {
+  const statusClasses: Record<string, string> = {
     active: 'bg-success-100 text-success-700',
     resolved: 'bg-gray-100 text-gray-700',
     inactive: 'bg-gray-100 text-gray-500'
@@ -180,8 +183,8 @@ const getStatusClass = (status) => {
   return statusClasses[status] || 'bg-gray-100 text-gray-700'
 }
 
-const getSeverityClass = (severity) => {
-  const severityClasses = {
+const getSeverityClass = (severity: string): string => {
+  const severityClasses: Record<string, string> = {
     mild: 'bg-yellow-100 text-yellow-700',
     moderate: 'bg-orange-100 text-orange-700',
     severe: 'bg-red-100 text-red-700'
@@ -189,14 +192,15 @@ const getSeverityClass = (severity) => {
   return severityClasses[severity] || 'bg-gray-100 text-gray-700'
 }
 
-const handleDelete = async (id, title) => {
-  if (confirm(`Are you sure you want to delete the record "${title}"?`)) {
+const handleDelete = async (id: string | undefined, title: string | undefined): Promise<void> => {
+  if (!id) return
+  if (confirm(`Are you sure you want to delete the record "${title || 'this record'}"?`)) {
     try {
       await recordStore.deleteRecord(id)
-      alert('Clinical record deleted successfully')
+      toast.success('Clinical record deleted successfully')
     } catch (err) {
       console.error('Delete error:', err)
-      alert('Failed to delete clinical record')
+      toast.error('Failed to delete clinical record')
     }
   }
 }

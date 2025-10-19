@@ -4,7 +4,7 @@
  */
 import { defineStore } from 'pinia'
 import { patientService } from '../services/api'
-import type { Patient, Bundle } from '../types/fhir'
+import type { Patient } from '../types/fhir'
 
 interface PatientState {
   patients: Patient[]
@@ -26,6 +26,9 @@ export const usePatientStore = defineStore('patient', {
      * Get all patients sorted by creation date
      */
     sortedPatients: (state): Patient[] => {
+      if (!Array.isArray(state.patients)) {
+        return []
+      }
       return [...state.patients].sort((a, b) => {
         const dateA = new Date(a.meta?.lastUpdated || 0).getTime()
         const dateB = new Date(b.meta?.lastUpdated || 0).getTime()
@@ -37,13 +40,20 @@ export const usePatientStore = defineStore('patient', {
      * Get patient by ID
      */
     getPatientById: (state) => {
-      return (id: string): Patient | undefined => state.patients.find((p) => p.id === id)
+      return (id: string): Patient | undefined => {
+        if (!Array.isArray(state.patients)) {
+          return undefined
+        }
+        return state.patients.find((p) => p.id === id)
+      }
     },
 
     /**
      * Check if patients are loaded
      */
-    hasPatients: (state): boolean => state.patients.length > 0,
+    hasPatients: (state): boolean => {
+      return Array.isArray(state.patients) && state.patients.length > 0
+    },
   },
 
   actions: {

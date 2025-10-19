@@ -21,42 +21,48 @@
     </div>
 
     <!-- Dropdown Options -->
-    <transition
-      enter-active-class="transition ease-out duration-100"
-      enter-from-class="transform opacity-0 scale-95"
-      enter-to-class="transform opacity-100 scale-100"
-      leave-active-class="transition ease-in duration-75"
-      leave-from-class="transform opacity-100 scale-100"
-      leave-to-class="transform opacity-0 scale-95"
-    >
-      <div
-        v-show="isOpen && filteredOptions.length > 0"
-        class="absolute z-50 mt-1 w-full bg-white rounded-xl shadow-lg max-h-60 overflow-auto border border-gray-200"
+    <Teleport to="body">
+      <transition
+        enter-active-class="transition ease-out duration-100"
+        enter-from-class="transform opacity-0 scale-95"
+        enter-to-class="transform opacity-100 scale-100"
+        leave-active-class="transition ease-in duration-75"
+        leave-from-class="transform opacity-100 scale-100"
+        leave-to-class="transform opacity-0 scale-95"
       >
-        <ul class="py-1">
-          <li
-            v-for="option in filteredOptions"
-            :key="option[valueKey]"
-            @click="selectOption(option)"
-            class="px-4 py-2 hover:bg-primary-50 cursor-pointer transition-colors"
-            :class="{
-              'bg-primary-100 text-primary-900': modelValue === option[valueKey],
-              'text-gray-900': modelValue !== option[valueKey]
-            }"
-          >
-            {{ option[labelKey] }}
-          </li>
-        </ul>
-      </div>
-    </transition>
+        <div
+          v-show="isOpen && filteredOptions.length > 0"
+          ref="dropdownMenu"
+          class="absolute z-[9999] bg-white rounded-xl shadow-lg max-h-60 overflow-auto border border-gray-200"
+          :style="dropdownStyle"
+        >
+          <ul class="py-1">
+            <li
+              v-for="option in filteredOptions"
+              :key="option[valueKey]"
+              @click="selectOption(option)"
+              class="px-4 py-2 hover:bg-primary-50 cursor-pointer transition-colors"
+              :class="{
+                'bg-primary-100 text-primary-900': modelValue === option[valueKey],
+                'text-gray-900': modelValue !== option[valueKey]
+              }"
+            >
+              {{ option[labelKey] }}
+            </li>
+          </ul>
+        </div>
+      </transition>
 
-    <!-- No Results Message -->
-    <div
-      v-show="isOpen && searchQuery && filteredOptions.length === 0"
-      class="absolute z-50 mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-200 px-4 py-3"
-    >
-      <p class="text-sm text-gray-500 text-center">No results found</p>
-    </div>
+      <!-- No Results Message -->
+      <div
+        v-show="isOpen && searchQuery && filteredOptions.length === 0"
+        ref="noResultsMenu"
+        class="absolute z-[9999] bg-white rounded-xl shadow-lg border border-gray-200 px-4 py-3"
+        :style="dropdownStyle"
+      >
+        <p class="text-sm text-gray-500 text-center">No results found</p>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -93,6 +99,23 @@ const emit = defineEmits<{
 const searchQuery = ref<string>('')
 const isOpen = ref<boolean>(false)
 const dropdownRef = ref<HTMLDivElement | null>(null)
+const dropdownMenu = ref<HTMLDivElement | null>(null)
+const noResultsMenu = ref<HTMLDivElement | null>(null)
+const dropdownStyle = ref<Record<string, string>>({})
+
+// Calculate dropdown position
+const updateDropdownPosition = (): void => {
+  if (!dropdownRef.value) return
+
+  const rect = dropdownRef.value.getBoundingClientRect()
+  dropdownStyle.value = {
+    position: 'fixed',
+    top: `${rect.bottom + 4}px`,
+    left: `${rect.left}px`,
+    width: `${rect.width}px`,
+    marginTop: '0'
+  }
+}
 
 // Initialize search query with selected option label
 const initializeSearchQuery = (): void => {
@@ -109,10 +132,14 @@ const initializeSearchQuery = (): void => {
 onMounted(() => {
   initializeSearchQuery()
   document.addEventListener('click', handleClickOutside)
+  window.addEventListener('scroll', updateDropdownPosition, true)
+  window.addEventListener('resize', updateDropdownPosition)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('scroll', updateDropdownPosition, true)
+  window.removeEventListener('resize', updateDropdownPosition)
 })
 
 // Watch for external changes to modelValue
@@ -124,6 +151,13 @@ watch(() => props.modelValue, () => {
 watch(() => props.options, () => {
   initializeSearchQuery()
 }, { deep: true })
+
+// Watch for isOpen changes to update position
+watch(isOpen, (newValue) => {
+  if (newValue) {
+    updateDropdownPosition()
+  }
+})
 
 const filteredOptions = computed<SearchableSelectOption[]>(() => {
   if (!searchQuery.value) {
@@ -144,6 +178,7 @@ const selectOption = (option: SearchableSelectOption): void => {
 
 const handleSearch = (): void => {
   isOpen.value = true
+  updateDropdownPosition()
   // If user clears the input, clear the selection
   if (!searchQuery.value) {
     emit('update:modelValue', '')
@@ -151,7 +186,11 @@ const handleSearch = (): void => {
 }
 
 const handleClickOutside = (event: MouseEvent): void => {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+  const target = event.target as Node
+  const isClickInsideDropdown = dropdownRef.value?.contains(target)
+  const isClickInsideMenu = dropdownMenu.value?.contains(target) || noResultsMenu.value?.contains(target)
+  
+  if (!isClickInsideDropdown && !isClickInsideMenu) {
     isOpen.value = false
     // Restore the selected option label if user clicked outside
     initializeSearchQuery()

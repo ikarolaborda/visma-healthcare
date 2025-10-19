@@ -217,11 +217,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useClinicalRecordStore } from '../../stores/clinicalRecord'
 import { storeToRefs } from 'pinia'
-import type { Observation } from '../../types/fhir'
 
 const router = useRouter()
 const route = useRoute()

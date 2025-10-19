@@ -96,7 +96,7 @@
           </div>
           <div>
             <div class="text-sm font-medium text-gray-900">
-              {{ getPractitionerName(row) }}
+              {{ row._displayName }}
             </div>
           </div>
         </div>
@@ -169,51 +169,63 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useToast } from 'vue-toastification'
 import { usePractitionerStore } from '../stores/practitioner'
 import { storeToRefs } from 'pinia'
 import DataTable from '../components/DataTable.vue'
+import type { Practitioner } from '../types/fhir'
 
 const { t } = useI18n()
+const toast = useToast()
 const practitionerStore = usePractitionerStore()
 const { practitioners, loading, error } = storeToRefs(practitionerStore)
 
 onMounted(async () => {
-  await practitionerStore.fetchPractitioners()
+  console.log('[PractitionerList] Component mounted, calling fetchPractitioners')
+  try {
+    await practitionerStore.fetchPractitioners()
+    console.log('[PractitionerList] Fetch complete, practitioners.value.length:', practitioners.value.length)
+  } catch (error) {
+    console.error('[PractitionerList] Error during fetch:', error)
+  }
 })
 
 const columns = computed(() => [
-  { key: 'name', label: t('practitioner.fullName') },
+  { key: '_displayName', label: t('practitioner.fullName') },
   { key: 'specialization', label: t('practitioner.specialization') },
   { key: 'email', label: t('practitioner.email') },
   { key: 'phone', label: t('practitioner.phone') },
-  { key: 'status', label: t('common.status') }
+  { key: '_displayStatus', label: t('common.status') }
 ])
 
 const sortedPractitioners = computed(() => {
   return [...practitioners.value]
-    .map(practitioner => ({
-      ...practitioner,
-      // Add flattened fields for filtering
-      name: getPractitionerName(practitioner),
-      status: practitioner.active ? t('common.active') : t('common.inactive')
-    }))
+    .map(practitioner => {
+      // Create extended practitioner object with computed display fields
+      const extended: any = { ...practitioner }
+      extended._displayName = getPractitionerName(practitioner)
+      extended._displayStatus = practitioner.active ? t('common.active') : t('common.inactive')
+      return extended
+    })
     .sort((a, b) => {
-      const nameA = a.name.toLowerCase()
-      const nameB = b.name.toLowerCase()
+      const nameA = a._displayName.toLowerCase()
+      const nameB = b._displayName.toLowerCase()
       return nameA.localeCompare(nameB)
     })
 })
 
 const hasPractitioners = computed(() => practitioners.value.length > 0)
 
-const getPractitionerName = (practitioner) => {
+const getPractitionerName = (practitioner: Practitioner): string => {
   // Handle FHIR format (name[0].given, name[0].family)
   if (practitioner.name && practitioner.name.length > 0) {
     const nameObj = practitioner.name[0]
-    const prefix = nameObj.prefix?.join(' ') || ''
-    const given = nameObj.given?.join(' ') || ''
-    const family = nameObj.family || ''
-    return `${prefix} ${given} ${family}`.trim() || 'Unknown Practitioner'
+    if (nameObj) {
+      const prefix = nameObj.prefix?.join(' ') || ''
+      const given = nameObj.given?.join(' ') || ''
+      const family = nameObj.family || ''
+      return `${prefix} ${given} ${family}`.trim() || 'Unknown Practitioner'
+    }
   }
   // Fallback to legacy format
   const prefix = practitioner.prefix ? `${practitioner.prefix} ` : ''
@@ -222,13 +234,15 @@ const getPractitionerName = (practitioner) => {
   return `${prefix}${given} ${family}`.trim() || 'Unknown Practitioner'
 }
 
-const getInitials = (practitioner) => {
+const getInitials = (practitioner: Practitioner): string => {
   // Handle FHIR format
   if (practitioner.name && practitioner.name.length > 0) {
     const nameObj = practitioner.name[0]
-    const firstInitial = nameObj.given?.[0]?.[0] || ''
-    const lastInitial = nameObj.family?.[0] || ''
-    return (firstInitial + lastInitial).toUpperCase() || 'UP'
+    if (nameObj) {
+      const firstInitial = nameObj.given?.[0]?.[0] || ''
+      const lastInitial = nameObj.family?.[0] || ''
+      return (firstInitial + lastInitial).toUpperCase() || 'UP'
+    }
   }
   // Fallback to legacy format
   const firstInitial = practitioner.given_name?.[0] || ''
@@ -236,19 +250,19 @@ const getInitials = (practitioner) => {
   return (firstInitial + lastInitial).toUpperCase() || 'UP'
 }
 
-const handleDelete = async (id, practitionerName) => {
+const handleDelete = async (id: string, practitionerName: string): Promise<void> => {
   if (confirm(t('practitioner.confirmDelete', { name: practitionerName }))) {
     try {
       await practitionerStore.deletePractitioner(id)
-      alert(t('practitioner.deleteSuccess'))
+      toast.success(t('practitioner.deleteSuccess'))
     } catch (err) {
       console.error('Delete error:', err)
-      alert(t('practitioner.deleteError'))
+      toast.error(t('practitioner.deleteError'))
     }
   }
 }
 
-const clearError = () => {
+const clearError = (): void => {
   practitionerStore.clearError()
 }
 </script>

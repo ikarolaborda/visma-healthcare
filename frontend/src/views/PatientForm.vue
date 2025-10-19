@@ -11,7 +11,7 @@
         </p>
       </div>
       <router-link
-        to="/"
+        to="/patients"
         class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
       >
         <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -318,15 +318,18 @@ import { useRouter, useRoute } from 'vue-router'
 import { usePatientStore } from '../stores/patient'
 import { buildFHIRPatient, extractFormData } from '../services/api'
 import { storeToRefs } from 'pinia'
+import { useToast } from 'vue-toastification'
+import type { PatientFormData } from '../types'
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 const patientStore = usePatientStore()
 const { loading, error } = storeToRefs(patientStore)
 
 const isEditMode = computed(() => !!route.params.id)
 
-const formData = ref({
+const formData = ref<PatientFormData>({
   givenName: '',
   middleName: '',
   familyName: '',
@@ -345,7 +348,7 @@ const formData = ref({
 onMounted(async () => {
   if (isEditMode.value) {
     try {
-      const patient = await patientStore.fetchPatientById(route.params.id)
+      const patient = await patientStore.fetchPatientById(route.params.id as string)
       formData.value = extractFormData(patient)
     } catch (err) {
       console.error('Failed to load patient:', err)
@@ -354,19 +357,22 @@ onMounted(async () => {
   }
 })
 
-const handleSubmit = async () => {
+const handleSubmit = async (): Promise<void> => {
   try {
     const fhirPatient = buildFHIRPatient(formData.value)
 
     if (isEditMode.value) {
-      await patientStore.updatePatient(route.params.id, fhirPatient)
+      await patientStore.updatePatient(route.params.id as string, fhirPatient)
+      toast.success('Patient updated successfully')
     } else {
       await patientStore.createPatient(fhirPatient)
+      toast.success('Patient created successfully')
     }
 
     router.push('/')
   } catch (err) {
     console.error('Failed to save patient:', err)
+    toast.error(isEditMode.value ? 'Failed to update patient' : 'Failed to create patient')
   }
 }
 </script>

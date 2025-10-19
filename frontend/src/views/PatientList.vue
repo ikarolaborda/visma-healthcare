@@ -96,7 +96,7 @@
           </div>
           <div>
             <div class="text-sm font-medium text-gray-900">
-              {{ getPatientName(row) }}
+              {{ row._displayName }}
             </div>
           </div>
         </div>
@@ -172,15 +172,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted } from 'vue'
 import { usePatientStore } from '../stores/patient'
 import { useI18n } from 'vue-i18n'
+import { useToast } from 'vue-toastification'
 import { storeToRefs } from 'pinia'
 import DataTable from '../components/DataTable.vue'
+import type { Patient } from '../types/fhir'
 
 const { t } = useI18n()
-const router = useRouter()
+const toast = useToast()
 const patientStore = usePatientStore()
 const { patients, loading, error } = storeToRefs(patientStore)
 
@@ -189,41 +190,42 @@ onMounted(async () => {
 })
 
 const columns = computed(() => [
-  { key: 'name', label: t('patient.fullName') },
+  { key: '_displayName', label: t('patient.fullName') },
   { key: 'gender', label: t('patient.gender') },
   { key: 'birthDate', label: t('patient.birthDate') },
-  { key: 'email', label: t('patient.email') },
-  { key: 'phone', label: t('patient.phone') },
-  { key: 'status', label: t('common.status') }
+  { key: '_displayEmail', label: t('patient.email') },
+  { key: '_displayPhone', label: t('patient.phone') },
+  { key: '_displayStatus', label: t('common.status') }
 ])
 
 const sortedPatients = computed(() => {
   return [...patients.value]
-    .map(patient => ({
-      ...patient,
-      // Add flattened fields for filtering
-      name: getPatientName(patient),
-      email: getEmail(patient),
-      phone: getPhone(patient),
-      status: patient.active ? t('common.active') : t('common.inactive')
-    }))
+    .map(patient => {
+      // Create extended patient object with computed display fields
+      const extended: any = { ...patient }
+      extended._displayName = getPatientName(patient)
+      extended._displayEmail = getEmail(patient)
+      extended._displayPhone = getPhone(patient)
+      extended._displayStatus = patient.active ? t('common.active') : t('common.inactive')
+      return extended
+    })
     .sort((a, b) => {
-      const nameA = a.name.toLowerCase()
-      const nameB = b.name.toLowerCase()
+      const nameA = a._displayName.toLowerCase()
+      const nameB = b._displayName.toLowerCase()
       return nameA.localeCompare(nameB)
     })
 })
 
 const hasPatients = computed(() => patients.value.length > 0)
 
-const getPatientName = (patient) => {
+const getPatientName = (patient: Patient): string => {
   const name = patient.name?.[0]
   if (!name) return 'Unknown Patient'
   const given = name.given?.join(' ') || ''
   return `${given} ${name.family || ''}`.trim() || 'Unknown Patient'
 }
 
-const getInitials = (patient) => {
+const getInitials = (patient: Patient): string => {
   const name = patient.name?.[0]
   if (!name) return 'UP'
   const firstInitial = name.given?.[0]?.[0] || ''
@@ -231,15 +233,15 @@ const getInitials = (patient) => {
   return (firstInitial + lastInitial).toUpperCase() || 'UP'
 }
 
-const getEmail = (patient) => {
+const getEmail = (patient: Patient): string => {
   return patient.telecom?.find(t => t.system === 'email')?.value || 'N/A'
 }
 
-const getPhone = (patient) => {
+const getPhone = (patient: Patient): string => {
   return patient.telecom?.find(t => t.system === 'phone')?.value || 'N/A'
 }
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-US', {
@@ -249,19 +251,19 @@ const formatDate = (dateStr) => {
   })
 }
 
-const handleDelete = async (id, patientName) => {
+const handleDelete = async (id: string, patientName: string): Promise<void> => {
   if (confirm(t('patient.confirmDelete', { name: patientName }))) {
     try {
       await patientStore.deletePatient(id)
-      alert(t('patient.deleteSuccess'))
+      toast.success(t('patient.deleteSuccess'))
     } catch (err) {
       console.error('Delete error:', err)
-      alert(t('patient.deleteError'))
+      toast.error(t('patient.deleteError'))
     }
   }
 }
 
-const clearError = () => {
+const clearError = (): void => {
   patientStore.clearError()
 }
 </script>

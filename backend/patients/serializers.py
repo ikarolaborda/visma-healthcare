@@ -120,7 +120,17 @@ class FHIRPatientSerializer(serializers.Serializer):
 
         # Create FHIR Patient and return as dict
         fhir_patient = FHIRPatient(**fhir_data)
-        return fhir_patient.dict(exclude_none=True)
+        result = fhir_patient.dict(exclude_none=True)
+
+        # Ensure birthDate is a string (fhir.resources may convert it back to date object)
+        if 'birthDate' in result and instance.birth_date:
+            result['birthDate'] = instance.birth_date.isoformat()
+
+        # Add custom metadata fields (not part of standard FHIR but useful for UI)
+        result['created_at'] = instance.created_at.isoformat()
+        result['updated_at'] = instance.updated_at.isoformat()
+
+        return result
 
     def to_internal_value(self, data):
         """

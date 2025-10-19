@@ -257,29 +257,32 @@ import { useRouter, useRoute } from 'vue-router'
 import { usePatientStore } from '../stores/patient'
 import { useAppointmentStore } from '../stores/appointment'
 import { useI18n } from 'vue-i18n'
+import { useToast } from 'vue-toastification'
 import { storeToRefs } from 'pinia'
+import type { Patient, Appointment } from '../types/fhir'
 
 const { t } = useI18n()
+const toast = useToast()
 const router = useRouter()
 const route = useRoute()
 const patientStore = usePatientStore()
 const appointmentStore = useAppointmentStore()
 const { loading, error } = storeToRefs(patientStore)
 
-const patient = ref(null)
-const patientAppointments = ref([])
-const appointmentsLoading = ref(false)
+const patient = ref<Patient | null>(null)
+const patientAppointments = ref<Appointment[]>([])
+const appointmentsLoading = ref<boolean>(false)
 
 onMounted(async () => {
   try {
-    patient.value = await patientStore.fetchPatientById(route.params.id)
+    patient.value = await patientStore.fetchPatientById(route.params.id as string)
 
     // Load appointments for this patient
     appointmentsLoading.value = true
     try {
-      patientAppointments.value = await appointmentStore.fetchAppointmentsByPatient(route.params.id)
+      patientAppointments.value = await appointmentStore.fetchAppointmentsByPatient(route.params.id as string)
       // Sort by date (most recent first)
-      patientAppointments.value.sort((a, b) => new Date(b.start) - new Date(a.start))
+      patientAppointments.value.sort((a, b) => new Date(b.start || 0).getTime() - new Date(a.start || 0).getTime())
     } catch (aptError) {
       console.error('Error fetching appointments:', aptError)
     } finally {
@@ -290,14 +293,14 @@ onMounted(async () => {
   }
 })
 
-const getPatientName = () => {
+const getPatientName = (): string => {
   const name = patient.value?.name?.[0]
   if (!name) return 'N/A'
   const given = name.given?.join(' ') || ''
   return `${given} ${name.family || ''}`.trim()
 }
 
-const getInitials = () => {
+const getInitials = (): string => {
   const name = patient.value?.name?.[0]
   if (!name) return 'UP'
   const firstInitial = name.given?.[0]?.[0] || ''
@@ -305,15 +308,15 @@ const getInitials = () => {
   return (firstInitial + lastInitial).toUpperCase() || 'UP'
 }
 
-const getEmail = () => {
+const getEmail = (): string | null => {
   return patient.value?.telecom?.find(t => t.system === 'email')?.value || null
 }
 
-const getPhone = () => {
+const getPhone = (): string | null => {
   return patient.value?.telecom?.find(t => t.system === 'phone')?.value || null
 }
 
-const getAddress = () => {
+const getAddress = (): string => {
   const address = patient.value?.address?.[0]
   if (!address) return 'N/A'
 
@@ -328,7 +331,7 @@ const getAddress = () => {
   return parts.join(', ') || 'N/A'
 }
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-US', {
@@ -344,23 +347,23 @@ const hasAddress = computed(() => {
   return address && (address.line || address.city || address.state || address.postalCode || address.country)
 })
 
-const handleDelete = async () => {
+const handleDelete = async (): Promise<void> => {
   if (confirm(t('patient.confirmDelete', { name: getPatientName() }))) {
     try {
-      await patientStore.deletePatient(route.params.id)
-      alert(t('patient.deleteSuccess'))
+      await patientStore.deletePatient(route.params.id as string)
+      toast.success(t('patient.deleteSuccess'))
       router.push('/')
     } catch (error) {
-      alert(t('patient.deleteError'))
+      toast.error(t('patient.deleteError'))
     }
   }
 }
 
-const getAppointmentReason = (appointment) => {
+const getAppointmentReason = (appointment: Appointment): string => {
   return appointment.reasonCode?.[0]?.text || appointment.description || t('appointment.noReason')
 }
 
-const formatAppointmentDate = (dateStr) => {
+const formatAppointmentDate = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-US', {
@@ -370,7 +373,7 @@ const formatAppointmentDate = (dateStr) => {
   })
 }
 
-const formatAppointmentTime = (dateStr) => {
+const formatAppointmentTime = (dateStr: string | undefined): string => {
   if (!dateStr) return 'N/A'
   const date = new Date(dateStr)
   return date.toLocaleTimeString('en-US', {
@@ -379,8 +382,8 @@ const formatAppointmentTime = (dateStr) => {
   })
 }
 
-const getAppointmentStatusClass = (status) => {
-  const statusClasses = {
+const getAppointmentStatusClass = (status: string): string => {
+  const statusClasses: Record<string, string> = {
     proposed: 'bg-gray-100 text-gray-700',
     pending: 'bg-yellow-100 text-yellow-700',
     booked: 'bg-blue-100 text-blue-700',

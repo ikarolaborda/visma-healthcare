@@ -2,11 +2,13 @@
 Application Layer: Report generation service.
 Implements business logic for report generation using DIP.
 """
+from __future__ import annotations
 import os
-from typing import Any, Dict
+from typing import Any, Dict, TYPE_CHECKING
 from datetime import datetime
 from django.core.files.base import ContentFile
 from django.utils import timezone
+from django.db.models import QuerySet
 
 from .interfaces import IReportGenerator, IReportDataProvider
 from .models import Report

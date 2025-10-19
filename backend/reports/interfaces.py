@@ -2,9 +2,13 @@
 Domain Layer: Abstract interfaces for Reports module.
 Implements Dependency Inversion Principle (DIP).
 """
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, TYPE_CHECKING
 from datetime import datetime
+
+if TYPE_CHECKING:
+    from .models import Report
 
 
 class IReportStrategy(ABC):

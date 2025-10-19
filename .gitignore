@@ -71,3 +71,6 @@ logs/
 .serena/
 .claude/
 .playwright-mcp/
+
+# Documentation
+CLAUDE.md

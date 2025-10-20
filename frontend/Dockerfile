@@ -2,7 +2,7 @@
 # Following Docker best practices for production
 
 # Build stage
-FROM node:20-alpine as builder
+FROM node:25-alpine as builder
 
 # Set work directory
 WORKDIR /app

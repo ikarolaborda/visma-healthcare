@@ -63,14 +63,31 @@ class TestAppointmentAPI:
 
     def test_update_appointment(self, authenticated_client, sample_appointment):
         """Test updating an appointment."""
+        # Use FHIR format for update
         data = {
+            'resourceType': 'Appointment',
+            'id': str(sample_appointment.id),
             'status': 'pending',
             'start': sample_appointment.start.isoformat(),
             'end': sample_appointment.end.isoformat(),
-            'patient': str(sample_appointment.patient.id),
-            'practitioner': str(sample_appointment.practitioner.id),
+            'participant': [
+                {
+                    'actor': {
+                        'reference': f'Patient/{sample_appointment.patient.id}',
+                        'display': f'{sample_appointment.patient.given_name} {sample_appointment.patient.family_name}'
+                    },
+                    'status': 'accepted'
+                },
+                {
+                    'actor': {
+                        'reference': f'Practitioner/{sample_appointment.practitioner.id}',
+                        'display': f'Dr. {sample_appointment.practitioner.given_name} {sample_appointment.practitioner.family_name}'
+                    },
+                    'status': 'accepted'
+                }
+            ]
         }
-        
+
         response = authenticated_client.put(
             f'/fhir/Appointment/{sample_appointment.id}/',
             data,
@@ -81,8 +98,13 @@ class TestAppointmentAPI:
 
     def test_partial_update_appointment(self, authenticated_client, sample_appointment):
         """Test partially updating an appointment."""
-        data = {'priority': 10}
-        
+        # Use FHIR format for partial update
+        data = {
+            'resourceType': 'Appointment',
+            'id': str(sample_appointment.id),
+            'priority': 10
+        }
+
         response = authenticated_client.patch(
             f'/fhir/Appointment/{sample_appointment.id}/',
             data,

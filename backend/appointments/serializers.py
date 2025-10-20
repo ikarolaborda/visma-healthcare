@@ -246,30 +246,35 @@ class FHIRAppointmentSerializer(serializers.Serializer):
                 'resourceType': 'Resource must be of type Appointment'
             })
 
-        # Validate required fields
-        if 'status' not in data:
-            raise serializers.ValidationError({
-                'status': 'Status is required'
-            })
+        # Validate required fields (only for full updates, not partial)
+        is_partial = getattr(self, 'partial', False)
 
-        if 'participant' not in data or not data['participant']:
-            raise serializers.ValidationError({
-                'participant': 'At least one participant is required'
-            })
+        if not is_partial:
+            if 'status' not in data:
+                raise serializers.ValidationError({
+                    'status': 'Status is required'
+                })
 
-        if 'start' not in data:
-            raise serializers.ValidationError({
-                'start': 'Start time is required'
-            })
+            if 'participant' not in data or not data['participant']:
+                raise serializers.ValidationError({
+                    'participant': 'At least one participant is required'
+                })
 
-        if 'end' not in data:
-            raise serializers.ValidationError({
-                'end': 'End time is required'
-            })
+            if 'start' not in data:
+                raise serializers.ValidationError({
+                    'start': 'Start time is required'
+                })
 
-        appointment_data = {
-            'status': data['status']
-        }
+            if 'end' not in data:
+                raise serializers.ValidationError({
+                    'end': 'End time is required'
+                })
+
+        appointment_data = {}
+
+        # Add status if provided
+        if 'status' in data:
+            appointment_data['status'] = data['status']
 
         # Extract service information
         if 'serviceCategory' in data and data['serviceCategory']:
@@ -302,74 +307,85 @@ class FHIRAppointmentSerializer(serializers.Serializer):
         if 'patientInstruction' in data:
             appointment_data['patient_instruction'] = data['patientInstruction']
 
-        # Extract timing
-        start_str = data['start']
-        end_str = data['end']
-
-        # Parse datetime strings and ensure timezone-aware
-        try:
-            if isinstance(start_str, str):
-                parsed_start = datetime.fromisoformat(start_str.replace('Z', '+00:00'))
-                # Ensure timezone-aware
-                if timezone.is_naive(parsed_start):
-                    appointment_data['start'] = timezone.make_aware(parsed_start)
+        # Extract timing (only if provided)
+        if 'start' in data:
+            start_str = data['start']
+            try:
+                if isinstance(start_str, str):
+                    parsed_start = datetime.fromisoformat(start_str.replace('Z', '+00:00'))
+                    # Ensure timezone-aware
+                    if timezone.is_naive(parsed_start):
+                        appointment_data['start'] = timezone.make_aware(parsed_start)
+                    else:
+                        appointment_data['start'] = parsed_start
                 else:
-                    appointment_data['start'] = parsed_start
-            else:
-                appointment_data['start'] = start_str
+                    appointment_data['start'] = start_str
+            except ValueError as e:
+                raise serializers.ValidationError({
+                    'start': f'Invalid date/time format: {str(e)}'
+                })
 
-            if isinstance(end_str, str):
-                parsed_end = datetime.fromisoformat(end_str.replace('Z', '+00:00'))
-                # Ensure timezone-aware
-                if timezone.is_naive(parsed_end):
-                    appointment_data['end'] = timezone.make_aware(parsed_end)
+        if 'end' in data:
+            end_str = data['end']
+            try:
+                if isinstance(end_str, str):
+                    parsed_end = datetime.fromisoformat(end_str.replace('Z', '+00:00'))
+                    # Ensure timezone-aware
+                    if timezone.is_naive(parsed_end):
+                        appointment_data['end'] = timezone.make_aware(parsed_end)
+                    else:
+                        appointment_data['end'] = parsed_end
                 else:
-                    appointment_data['end'] = parsed_end
-            else:
-                appointment_data['end'] = end_str
-        except ValueError as e:
-            raise serializers.ValidationError({
-                'timing': f'Invalid date/time format: {str(e)}'
-            })
+                    appointment_data['end'] = end_str
+            except ValueError as e:
+                raise serializers.ValidationError({
+                    'end': f'Invalid date/time format: {str(e)}'
+                })
 
         if 'minutesDuration' in data:
             appointment_data['minutes_duration'] = data['minutesDuration']
 
-        # Extract participants
-        patient_id = None
-        practitioner_id = None
-        patient_status = 'needs-action'
-        practitioner_status = 'needs-action'
-        practitioner_required = 'required'
+        # Extract participants (only if provided)
+        if 'participant' in data and data['participant']:
+            patient_id = None
+            practitioner_id = None
+            patient_status = 'needs-action'
+            practitioner_status = 'needs-action'
+            practitioner_required = 'required'
 
-        for participant in data['participant']:
-            if 'actor' in participant and 'reference' in participant['actor']:
-                reference = participant['actor']['reference']
-                status = participant.get('status', 'needs-action')
+            for participant in data['participant']:
+                if 'actor' in participant and 'reference' in participant['actor']:
+                    reference = participant['actor']['reference']
+                    status = participant.get('status', 'needs-action')
 
-                if reference.startswith('Patient/'):
-                    patient_id = reference.replace('Patient/', '')
-                    patient_status = status
-                elif reference.startswith('Practitioner/'):
-                    practitioner_id = reference.replace('Practitioner/', '')
-                    practitioner_status = status
-                    practitioner_required = participant.get('required', 'required')
+                    if reference.startswith('Patient/'):
+                        patient_id = reference.replace('Patient/', '')
+                        patient_status = status
+                    elif reference.startswith('Practitioner/'):
+                        practitioner_id = reference.replace('Practitioner/', '')
+                        practitioner_status = status
+                        practitioner_required = participant.get('required', 'required')
 
-        if not patient_id:
-            raise serializers.ValidationError({
-                'participant': 'Patient participant is required'
-            })
+            # Only validate participants for full updates
+            if not is_partial:
+                if not patient_id:
+                    raise serializers.ValidationError({
+                        'participant': 'Patient participant is required'
+                    })
 
-        if not practitioner_id:
-            raise serializers.ValidationError({
-                'participant': 'Practitioner participant is required'
-            })
+                if not practitioner_id:
+                    raise serializers.ValidationError({
+                        'participant': 'Practitioner participant is required'
+                    })
 
-        appointment_data['patient_id'] = patient_id
-        appointment_data['practitioner_id'] = practitioner_id
-        appointment_data['patient_status'] = patient_status
-        appointment_data['practitioner_status'] = practitioner_status
-        appointment_data['practitioner_required'] = practitioner_required
+            if patient_id:
+                appointment_data['patient_id'] = patient_id
+                appointment_data['patient_status'] = patient_status
+
+            if practitioner_id:
+                appointment_data['practitioner_id'] = practitioner_id
+                appointment_data['practitioner_status'] = practitioner_status
+                appointment_data['practitioner_required'] = practitioner_required
 
         # Extract cancellation reason if present
         if 'cancelationReason' in data:

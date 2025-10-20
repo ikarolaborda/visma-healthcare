@@ -133,32 +133,66 @@ cmd_logs() {
 
 show_usage() {
     cat << EOF
-Healthcare Application - Vagrant Deployment Helper
+$(print_message "${BLUE}" "============================================")
+$(print_message "${BLUE}" "Healthcare Application - Vagrant Helper")
+$(print_message "${BLUE}" "============================================")
 
-Usage:
-  ./vagrant-deploy.sh [COMMAND]
+$(print_message "${GREEN}" "QUICK START:")
+  1. Install Vagrant & VirtualBox (if not installed):
+     $(print_message "${YELLOW}" "./install-vagrant.sh")
 
-Commands:
-  up          Start the VM and deploy the application
-  halt        Stop the VM
-  destroy     Delete the VM completely
-  reload      Restart the VM and re-provision
-  provision   Re-run Ansible provisioning without restart
-  ssh         SSH into the VM
-  status      Show VM status
-  logs        View application logs
-  help        Show this help message
+  2. Start the VM and deploy the application:
+     $(print_message "${YELLOW}" "./vagrant-deploy.sh up")
 
-Examples:
-  ./vagrant-deploy.sh up        # Start and deploy
-  ./vagrant-deploy.sh ssh       # SSH into VM
-  ./vagrant-deploy.sh halt      # Stop VM
-  ./vagrant-deploy.sh destroy   # Delete VM
+  3. Wait 10-15 minutes for first-time setup
 
-Notes:
-  - Requires Vagrant and VirtualBox to be installed
-  - First run will take several minutes to download Ubuntu and provision
-  - Subsequent runs will be much faster
+  4. Access the application:
+     $(print_message "${BLUE}" "http://localhost:8080")
+
+$(print_message "${GREEN}" "AVAILABLE COMMANDS:")
+  $(print_message "${YELLOW}" "up")          Start the VM and deploy the application $(print_message "${GREEN}" "[START HERE!]")
+  $(print_message "${YELLOW}" "halt")        Stop the VM (saves state)
+  $(print_message "${YELLOW}" "destroy")     Delete the VM completely
+  $(print_message "${YELLOW}" "reload")      Restart the VM and re-provision
+  $(print_message "${YELLOW}" "provision")   Re-run Ansible provisioning without restart
+  $(print_message "${YELLOW}" "ssh")         SSH into the VM
+  $(print_message "${YELLOW}" "status")      Show VM status
+  $(print_message "${YELLOW}" "logs")        View application logs
+  $(print_message "${YELLOW}" "help")        Show this help message
+
+$(print_message "${GREEN}" "EXAMPLES:")
+  $(print_message "${YELLOW}" "./vagrant-deploy.sh up")        # Start and deploy (run this first!)
+  $(print_message "${YELLOW}" "./vagrant-deploy.sh status")    # Check if VM is running
+  $(print_message "${YELLOW}" "./vagrant-deploy.sh ssh")       # SSH into VM
+  $(print_message "${YELLOW}" "./vagrant-deploy.sh logs")      # View application logs
+  $(print_message "${YELLOW}" "./vagrant-deploy.sh halt")      # Stop VM
+  $(print_message "${YELLOW}" "./vagrant-deploy.sh destroy")   # Delete VM completely
+
+$(print_message "${GREEN}" "TYPICAL WORKFLOW:")
+  1. $(print_message "${YELLOW}" "./vagrant-deploy.sh up")      # First time: downloads & installs everything
+  2. Visit $(print_message "${BLUE}" "http://localhost:8080")  # Use the application
+  3. $(print_message "${YELLOW}" "./vagrant-deploy.sh halt")    # Stop VM when done
+  4. $(print_message "${YELLOW}" "./vagrant-deploy.sh up")      # Next day: start again (much faster!)
+
+$(print_message "${GREEN}" "ACCESS URLs (after 'up' completes):")
+  Frontend:    $(print_message "${BLUE}" "http://localhost:8080")
+  Backend API: $(print_message "${BLUE}" "http://localhost:8080/api/")
+  Admin:       $(print_message "${BLUE}" "http://localhost:8080/admin/")
+  Direct VM:   $(print_message "${BLUE}" "http://192.168.56.10")
+
+$(print_message "${GREEN}" "REQUIREMENTS:")
+  - Vagrant & VirtualBox must be installed
+  - Run $(print_message "${YELLOW}" "./install-vagrant.sh") if not installed
+  - First run takes 10-15 minutes (downloads Ubuntu, installs everything)
+  - Subsequent runs are much faster (1-2 minutes)
+  - Needs ~4GB RAM and 10GB disk space for the VM
+
+$(print_message "${GREEN}" "TROUBLESHOOTING:")
+  - Connection refused? Run: $(print_message "${YELLOW}" "./vagrant-deploy.sh status")
+  - VM not starting? Run: $(print_message "${YELLOW}" "./vagrant-deploy.sh destroy") then $(print_message "${YELLOW}" "./vagrant-deploy.sh up")
+  - See detailed docs: $(print_message "${YELLOW}" "cat VAGRANT_SETUP.md")
+
+$(print_message "${BLUE}" "Need help? Read VAGRANT_SETUP.md for detailed documentation")
 
 EOF
 }

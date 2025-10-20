@@ -38,7 +38,7 @@ requests==2.31.0
 
 # Caching
 redis==4.6.0
-django-redis==5.4.0
+django-redis==6.0.0
 
 # Message Queue & Async Tasks
 celery[redis]==5.3.4

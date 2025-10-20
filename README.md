@@ -218,13 +218,21 @@ mv .env .env.ansible
    cd visma-healthcare
    ```
 
-2. **Create environment file** (optional - Docker Compose has sensible defaults):
+2. **Create environment file**:
    ```bash
    cp .env.docker.example .env
-   # Edit .env if you need to customize database credentials or other settings
    ```
 
-   **Note**: For development, you can skip this step and use Docker Compose defaults (postgres/postgres).
+   Then edit `.env` to add your API keys and customize settings:
+   ```bash
+   # Edit the .env file
+   nano .env  # or use your preferred editor
+   ```
+
+   **Required if using AI chat features:**
+   - Set `OPENAI_API_KEY=your-actual-openai-key`
+
+   **Important:** Keep database credentials as `postgres/postgres` for Docker (already set in the template).
 
 3. **Run the complete installation**:
    ```bash
@@ -560,7 +568,14 @@ heroku container:release web -a healthcare-backend
 
 ### Environment Variables
 
-Required environment variables for production:
+**For Docker deployment**, use `.env.docker.example` as a template:
+
+```bash
+cp .env.docker.example .env
+# Then edit .env with your values
+```
+
+**Key environment variables:**
 
 ```env
 # Django
@@ -569,15 +584,32 @@ SECRET_KEY=<strong-secret-key>
 ALLOWED_HOSTS=yourdomain.com
 
 # Database
+# For Docker: Keep as postgres/postgres
+# For Ansible/Vagrant: Uses healthcare user (configured automatically)
 DB_NAME=healthcare_db
 DB_USER=postgres
-DB_PASSWORD=<strong-password>
-DB_HOST=<db-host>
+DB_PASSWORD=postgres  # Use strong password in production!
+DB_HOST=db  # or localhost for Vagrant
 DB_PORT=5432
+
+# AI Features (Optional - for AI chat functionality)
+OPENAI_API_KEY=sk-...  # Your OpenAI API key
 
 # CORS
 CORS_ALLOWED_ORIGINS=https://yourdomain.com
+
+# Redis
+REDIS_URL=redis://redis:6379/0
+
+# RabbitMQ/Celery
+CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+CELERY_RESULT_BACKEND=redis://redis:6379/1
 ```
+
+**Important Notes:**
+- **Docker deployment**: Database user MUST be `postgres` (not `healthcare`)
+- **Vagrant/Ansible deployment**: Uses separate `.env.ansible` file (auto-generated)
+- Never commit `.env` files to git (already in .gitignore)
 
 ## Testing
 

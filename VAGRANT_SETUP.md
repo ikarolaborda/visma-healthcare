@@ -79,6 +79,12 @@ make vagrant-halt
 # Restart and re-provision
 make vagrant-reload
 
+# Seed database with realistic data (if needed)
+make vagrant-seed
+
+# Create demo user (if needed)
+make vagrant-create-demo-user
+
 # Destroy VM completely
 make vagrant-destroy
 ```

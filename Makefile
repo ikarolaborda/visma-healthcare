@@ -306,3 +306,13 @@ vagrant-status: ## Show Vagrant VM status
 
 vagrant-logs: ## View application logs in Vagrant VM
 	@./vagrant-deploy.sh logs
+
+vagrant-seed: ## Seed Vagrant VM database with realistic data
+	@echo "$(GREEN)Seeding Vagrant VM database...$(NC)"
+	@vagrant ssh -c "cd /opt/healthcare/backend && /opt/healthcare/backend/venv/bin/python seed_realistic_data.py"
+	@echo "$(GREEN)Seeding complete!$(NC)"
+
+vagrant-create-demo-user: ## Create demo user in Vagrant VM
+	@echo "$(GREEN)Creating demo user in Vagrant VM...$(NC)"
+	@vagrant ssh -c "cd /opt/healthcare/backend && /opt/healthcare/backend/venv/bin/python manage.py shell -c \"from django.contrib.auth.models import User; u, created = User.objects.get_or_create(username='demo', defaults={'email': 'demo@example.com', 'first_name': 'Demo', 'last_name': 'User'}); u.set_password('demo123'); u.save(); print('✓ Demo user created' if created else '✓ Demo user already exists')\""
+	@echo "$(YELLOW)Username: demo, Password: demo123$(NC)"

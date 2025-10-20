@@ -57,3 +57,5 @@ nginx_server_name: localhost 192.168.56.10
 deploy_env: production
 run_migrations: true
 collect_static: true
+create_demo_user: true
+seed_database: true

@@ -198,6 +198,13 @@ The Patient model conforms to FHIR R4 Patient resource structure:
 
 ### Option 2: Docker (Quick and Portable)
 
+**⚠️ IMPORTANT**: If you previously used Vagrant/Ansible deployment, make sure to rename or remove the `.env` file in the project root before using Docker, as it contains Ansible-specific credentials that will conflict with Docker's database configuration.
+
+```bash
+# If a .env file exists from Ansible deployment
+mv .env .env.ansible
+```
+
 ### Prerequisites
 
 - Docker and Docker Compose
@@ -211,11 +218,13 @@ The Patient model conforms to FHIR R4 Patient resource structure:
    cd visma-healthcare
    ```
 
-2. **Create environment file**:
+2. **Create environment file** (optional - Docker Compose has sensible defaults):
    ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
+   cp .env.docker.example .env
+   # Edit .env if you need to customize database credentials or other settings
    ```
+
+   **Note**: For development, you can skip this step and use Docker Compose defaults (postgres/postgres).
 
 3. **Run the complete installation**:
    ```bash

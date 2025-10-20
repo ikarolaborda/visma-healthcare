@@ -57,27 +57,27 @@ class PatientViewSet(viewsets.ViewSet):
     )
     def list(self, request):
         """
-        List all patients as a FHIR Bundle.
+        List all patients as FHIR Patient resources in a Bundle.
 
         Returns:
-            Response: FHIR Bundle containing all Patient resources
+            Response: FHIR Bundle containing Patient resources
         """
         queryset = Patient.objects.all()
         serializer = FHIRPatientSerializer(queryset, many=True)
-
+        
         # Create FHIR Bundle response
         bundle = {
-            'resourceType': 'Bundle',
-            'type': 'searchset',
-            'total': queryset.count(),
-            'entry': [
+            "resourceType": "Bundle",
+            "type": "searchset",
+            "total": len(serializer.data),
+            "entry": [
                 {
-                    'resource': patient_data
+                    "resource": patient_data
                 }
                 for patient_data in serializer.data
             ]
         }
-
+        
         return Response(bundle, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(

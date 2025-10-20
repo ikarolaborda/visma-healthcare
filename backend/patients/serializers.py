@@ -120,7 +120,17 @@ class FHIRPatientSerializer(serializers.Serializer):
 
         # Create FHIR Patient and return as dict
         fhir_patient = FHIRPatient(**fhir_data)
-        return fhir_patient.dict(exclude_none=True)
+        result = fhir_patient.dict(exclude_none=True)
+
+        # Ensure birthDate is a string (fhir.resources may convert it back to date object)
+        if 'birthDate' in result and instance.birth_date:
+            result['birthDate'] = instance.birth_date.isoformat()
+
+        # Add custom metadata fields (not part of standard FHIR but useful for UI)
+        result['created_at'] = instance.created_at.isoformat()
+        result['updated_at'] = instance.updated_at.isoformat()
+
+        return result
 
     def to_internal_value(self, data):
         """
@@ -138,9 +148,14 @@ class FHIRPatientSerializer(serializers.Serializer):
                 'resourceType': 'Resource must be of type Patient'
             })
 
+        # Remove non-FHIR fields before validation
+        fhir_data = data.copy()
+        fhir_data.pop('created_at', None)
+        fhir_data.pop('updated_at', None)
+
         # Parse FHIR resource using fhir.resources
         try:
-            fhir_patient = FHIRPatient(**data)
+            fhir_patient = FHIRPatient(**fhir_data)
         except Exception as e:
             raise serializers.ValidationError({
                 'fhir_validation': f'Invalid FHIR Patient resource: {str(e)}'
@@ -154,6 +169,24 @@ class FHIRPatientSerializer(serializers.Serializer):
 
         name = fhir_patient.name[0]
         given_names = name.given or []
+
+        # Validate required fields
+        if not fhir_patient.gender:
+            raise serializers.ValidationError({
+                'gender': 'This field is required'
+            })
+
+        # Validate gender is one of the FHIR allowed values
+        valid_genders = ['male', 'female', 'other', 'unknown']
+        if fhir_patient.gender not in valid_genders:
+            raise serializers.ValidationError({
+                'gender': f'Invalid gender code. Must be one of: {", ".join(valid_genders)}'
+            })
+
+        if not fhir_patient.birthDate:
+            raise serializers.ValidationError({
+                'birthDate': 'This field is required'
+            })
 
         patient_data = {
             'family_name': name.family,

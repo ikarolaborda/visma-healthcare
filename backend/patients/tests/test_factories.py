@@ -264,7 +264,8 @@ class TestDataRealism:
         """Test birth dates are within reasonable range (0-100 years ago)."""
         patients = PatientFactory.create_batch(20)
         today = date.today()
-        min_date = today - timedelta(days=365 * 100)  # 100 years ago
+        # Account for leap years: 100 years = ~36525 days (365.25 * 100)
+        min_date = today - timedelta(days=int(365.25 * 100) + 1)  # 100 years ago with buffer
 
         for patient in patients:
             assert min_date <= patient.birth_date <= today

@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "title": "Patients Report Test",
+    "report_type": "patients",
+    "generated_at": "2025-10-19T15:13:52.820966+00:00",
+    "filters": {},
+    "total_records": 15
+  },
+  "data": [
+    {
+      "id": "5927bab5-66d1-40e6-9e1e-aa5283360dfa",
+      "full_name": "Laura White",
+      "gender": "female",
+      "birth_date": "1992-05-06",
+      "email": "laura.white@email.com",
+      "phone": "+1-555-0115",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.986562+00:00"
+    },
+    {
+      "id": "29b0b1d1-25d9-46ef-9a9d-d0dca7995613",
+      "full_name": "Matthew Lee",
+      "gender": "male",
+      "birth_date": "1984-07-11",
+      "email": "matthew.lee@email.com",
+      "phone": "+1-555-0114",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.985724+00:00"
+    },
+    {
+      "id": "94b8edde-25d7-4e4f-b8d9-e56cd07b3b72",
+      "full_name": "Maria Lopez",
+      "gender": "female",
+      "birth_date": "1968-03-28",
+      "email": "maria.lopez@email.com",
+      "phone": "+1-555-0113",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.984804+00:00"
+    },
+    {
+      "id": "1509627f-c218-4e38-af23-ce284c46ce7d",
+      "full_name": "Daniel Rodriguez",
+      "gender": "male",
+      "birth_date": "1993-10-15",
+      "email": "daniel.rodriguez@email.com",
+      "phone": "+1-555-0112",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.983823+00:00"
+    },
+    {
+      "id": "b4736e4b-e6be-4564-aace-c6b85a19735b",
+      "full_name": "Lisa Garcia",
+      "gender": "female",
+      "birth_date": "1987-01-09",
+      "email": "lisa.garcia@email.com",
+      "phone": "+1-555-0111",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.982954+00:00"
+    },
+    {
+      "id": "ed1de0bf-1056-42f4-a66a-e58b69c43f33",
+      "full_name": "James Moore",
+      "gender": "male",
+      "birth_date": "1970-08-22",
+      "email": "james.moore@email.com",
+      "phone": "+1-555-0110",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.981972+00:00"
+    },
+    {
+      "id": "c1e7bca2-ba2d-440b-8b2e-6d63c595da98",
+      "full_name": "Amanda Wilson",
+      "gender": "female",
+      "birth_date": "1991-04-18",
+      "email": "amanda.wilson@email.com",
+      "phone": "+1-555-0109",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.980997+00:00"
+    },
+    {
+      "id": "5eec3039-869b-4bd6-b415-8d1e0ea8b29a",
+      "full_name": "Christopher Davis",
+      "gender": "male",
+      "birth_date": "1982-06-30",
+      "email": "christopher.davis@email.com",
+      "phone": "+1-555-0108",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.980087+00:00"
+    },
+    {
+      "id": "528fb577-e0d8-49e7-addd-f5a55b64a207",
+      "full_name": "Jessica Brown",
+      "gender": "female",
+      "birth_date": "1995-12-03",
+      "email": "jessica.brown@email.com",
+      "phone": "+1-555-0107",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.979183+00:00"
+    },
+    {
+      "id": "0d1e1a9f-cc75-4d4a-9901-1a5d241ed2ea",
+      "full_name": "David Taylor",
+      "gender": "male",
+      "birth_date": "1978-02-14",
+      "email": "david.taylor@email.com",
+      "phone": "+1-555-0106",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.978250+00:00"
+    },
+    {
+      "id": "41cacb2f-a9ab-4d18-bcb1-810cc8e6a997",
+      "full_name": "Emily Williams",
+      "gender": "female",
+      "birth_date": "1988-09-25",
+      "email": "emily.williams@email.com",
+      "phone": "+1-555-0105",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.977173+00:00"
+    },
+    {
+      "id": "27d943b1-8543-4205-bdb5-4f801e7eda54",
+      "full_name": "Robert Johnson",
+      "gender": "male",
+      "birth_date": "1965-05-12",
+      "email": "robert.johnson@email.com",
+      "phone": "+1-555-0104",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.976183+00:00"
+    },
+    {
+      "id": "7a66eca3-fe36-41a9-9f60-9d03fd0725dc",
+      "full_name": "Jennifer Martinez",
+      "gender": "female",
+      "birth_date": "1990-07-08",
+      "email": "jennifer.martinez@email.com",
+      "phone": "+1-555-0103",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.975046+00:00"
+    },
+    {
+      "id": "1fb29535-5045-4329-8b1b-07bfc55dcb2f",
+      "full_name": "Michael Chen",
+      "gender": "male",
+      "birth_date": "1972-11-20",
+      "email": "michael.chen@email.com",
+      "phone": "+1-555-0102",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.974122+00:00"
+    },
+    {
+      "id": "9edc7328-62cf-4562-871a-efa33d3ef41f",
+      "full_name": "Sarah Anderson",
+      "gender": "female",
+      "birth_date": "1985-03-15",
+      "email": "sarah.anderson@email.com",
+      "phone": "+1-555-0101",
+      "active": "Active",
+      "created_at": "2025-10-19T14:22:55.973053+00:00"
+    }
+  ]
+}

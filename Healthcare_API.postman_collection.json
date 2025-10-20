@@ -1,0 +1,848 @@
+{
+	"info": {
+		"_postman_id": "healthcare-api-collection",
+		"name": "Healthcare Patient Management API",
+		"description": "Complete FHIR R4-compliant API collection for Healthcare Patient Management System\n\n## Authentication\nThis API uses JWT (JSON Web Tokens) for authentication. Follow these steps:\n1. Use the 'Register' or 'Login' endpoint in the Authentication folder\n2. The access token will be automatically saved to the environment\n3. All subsequent requests will use this token automatically\n\n## Base URL\nDevelopment: http://localhost:8000\n\n## Features\n- FHIR R4 compliant resources\n- JWT authentication\n- Automated token refresh\n- Example requests with realistic data\n- Test assertions",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('access_token', response.access);",
+									"    pm.environment.set('refresh_token', response.refresh);",
+									"    pm.test('User registered successfully', () => {",
+									"        pm.expect(response.access).to.be.a('string');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"demo_user\",\n    \"email\": \"demo@example.com\",\n    \"password\": \"SecurePass123!\",\n    \"password2\": \"SecurePass123!\",\n    \"first_name\": \"Demo\",\n    \"last_name\": \"User\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register", ""]
+						},
+						"description": "Register a new user account. Returns access and refresh JWT tokens."
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('access_token', response.access);",
+									"    pm.environment.set('refresh_token', response.refresh);",
+									"    pm.test('Login successful', () => {",
+									"        pm.expect(response.access).to.be.a('string');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"demo\",\n    \"password\": \"demo123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login", ""]
+						},
+						"description": "Login with username and password. Returns JWT tokens."
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('access_token', response.access);",
+									"    pm.test('Token refreshed', () => {",
+									"        pm.expect(response.access).to.be.a('string');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/token/refresh/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "token", "refresh", ""]
+						}
+					}
+				},
+				{
+					"name": "Get User Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/profile/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "profile", ""]
+						}
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "logout", ""]
+						}
+					}
+				}
+			],
+			"description": "Authentication endpoints for user registration, login, token management"
+		},
+		{
+			"name": "FHIR Patient",
+			"item": [
+				{
+					"name": "List Patients",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fhir/Patient/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Patient", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Patient",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('patient_id', response.id);",
+									"    pm.test('Patient created', () => {",
+									"        pm.expect(response.resourceType).to.equal('Patient');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resourceType\": \"Patient\",\n    \"active\": true,\n    \"name\": [\n        {\n            \"use\": \"official\",\n            \"family\": \"Smith\",\n            \"given\": [\"John\", \"Michael\"]\n        }\n    ],\n    \"telecom\": [\n        {\n            \"system\": \"phone\",\n            \"value\": \"+1-555-0123\",\n            \"use\": \"home\"\n        },\n        {\n            \"system\": \"email\",\n            \"value\": \"john.smith@example.com\",\n            \"use\": \"home\"\n        }\n    ],\n    \"gender\": \"male\",\n    \"birthDate\": \"1985-03-15\",\n    \"address\": [\n        {\n            \"use\": \"home\",\n            \"line\": [\"123 Main Street\", \"Apt 4B\"],\n            \"city\": \"Springfield\",\n            \"state\": \"IL\",\n            \"postalCode\": \"62701\",\n            \"country\": \"USA\"\n        }\n    ],\n    \"maritalStatus\": {\n        \"coding\": [\n            {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/v3-MaritalStatus\",\n                \"code\": \"M\",\n                \"display\": \"Married\"\n            }\n        ]\n    },\n    \"communication\": [\n        {\n            \"language\": {\n                \"coding\": [\n                    {\n                        \"system\": \"urn:ietf:bcp:47\",\n                        \"code\": \"en-US\",\n                        \"display\": \"English (United States)\"\n                    }\n                ]\n            },\n            \"preferred\": true\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/fhir/Patient/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Patient", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Patient by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fhir/Patient/{{patient_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Patient", "{{patient_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Update Patient",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resourceType\": \"Patient\",\n    \"active\": true,\n    \"name\": [\n        {\n            \"use\": \"official\",\n            \"family\": \"Smith\",\n            \"given\": [\"John\", \"Michael\", \"Jr.\"]\n        }\n    ],\n    \"gender\": \"male\",\n    \"birthDate\": \"1985-03-15\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/fhir/Patient/{{patient_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Patient", "{{patient_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Patient",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fhir/Patient/{{patient_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Patient", "{{patient_id}}", ""]
+						}
+					}
+				}
+			],
+			"description": "FHIR R4 Patient resource endpoints"
+		},
+		{
+			"name": "FHIR Practitioner",
+			"item": [
+				{
+					"name": "List Practitioners",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fhir/Practitioner/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Practitioner", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Practitioner",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('practitioner_id', response.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resourceType\": \"Practitioner\",\n    \"active\": true,\n    \"name\": [\n        {\n            \"use\": \"official\",\n            \"family\": \"Johnson\",\n            \"given\": [\"Sarah\", \"Emily\"],\n            \"prefix\": [\"Dr.\"],\n            \"suffix\": [\"MD\"]\n        }\n    ],\n    \"telecom\": [\n        {\n            \"system\": \"phone\",\n            \"value\": \"+1-555-0199\",\n            \"use\": \"work\"\n        },\n        {\n            \"system\": \"email\",\n            \"value\": \"dr.johnson@hospital.com\",\n            \"use\": \"work\"\n        }\n    ],\n    \"gender\": \"female\",\n    \"birthDate\": \"1978-06-22\",\n    \"qualification\": [\n        {\n            \"code\": {\n                \"coding\": [\n                    {\n                        \"system\": \"http://terminology.hl7.org/CodeSystem/v2-0360\",\n                        \"code\": \"MD\",\n                        \"display\": \"Doctor of Medicine\"\n                    }\n                ]\n            },\n            \"period\": {\n                \"start\": \"2005-06-01\"\n            },\n            \"issuer\": {\n                \"display\": \"Medical Board of Illinois\"\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/fhir/Practitioner/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Practitioner", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Practitioner by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fhir/Practitioner/{{practitioner_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Practitioner", "{{practitioner_id}}", ""]
+						}
+					}
+				}
+			],
+			"description": "FHIR R4 Practitioner resource endpoints"
+		},
+		{
+			"name": "FHIR Appointment",
+			"item": [
+				{
+					"name": "List Appointments",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fhir/Appointment/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Appointment", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Appointment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('appointment_id', response.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resourceType\": \"Appointment\",\n    \"status\": \"booked\",\n    \"serviceType\": [\n        {\n            \"coding\": [\n                {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/service-type\",\n                    \"code\": \"124\",\n                    \"display\": \"General Practice\"\n                }\n            ]\n        }\n    ],\n    \"priority\": 5,\n    \"description\": \"Annual checkup\",\n    \"start\": \"2025-11-01T10:00:00Z\",\n    \"end\": \"2025-11-01T10:30:00Z\",\n    \"minutesDuration\": 30,\n    \"participant\": [\n        {\n            \"actor\": {\n                \"reference\": \"Patient/{{patient_id}}\",\n                \"display\": \"John Smith\"\n            },\n            \"required\": \"required\",\n            \"status\": \"accepted\"\n        },\n        {\n            \"actor\": {\n                \"reference\": \"Practitioner/{{practitioner_id}}\",\n                \"display\": \"Dr. Sarah Johnson\"\n            },\n            \"required\": \"required\",\n            \"status\": \"accepted\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/fhir/Appointment/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Appointment", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Appointment by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fhir/Appointment/{{appointment_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Appointment", "{{appointment_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Cancel Appointment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fhir/Appointment/{{appointment_id}}/cancel/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Appointment", "{{appointment_id}}", "cancel", ""]
+						}
+					}
+				}
+			],
+			"description": "FHIR R4 Appointment resource endpoints"
+		},
+		{
+			"name": "FHIR MedicationRequest",
+			"item": [
+				{
+					"name": "List Prescriptions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fhir/MedicationRequest/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "MedicationRequest", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Prescription",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resourceType\": \"MedicationRequest\",\n    \"status\": \"active\",\n    \"intent\": \"order\",\n    \"medicationCodeableConcept\": {\n        \"coding\": [\n            {\n                \"system\": \"http://www.nlm.nih.gov/research/umls/rxnorm\",\n                \"code\": \"308136\",\n                \"display\": \"Acetaminophen 325 MG Oral Tablet\"\n            }\n        ],\n        \"text\": \"Tylenol 325mg\"\n    },\n    \"subject\": {\n        \"reference\": \"Patient/{{patient_id}}\",\n        \"display\": \"John Smith\"\n    },\n    \"authoredOn\": \"2025-10-19T14:30:00Z\",\n    \"requester\": {\n        \"reference\": \"Practitioner/{{practitioner_id}}\",\n        \"display\": \"Dr. Sarah Johnson\"\n    },\n    \"dosageInstruction\": [\n        {\n            \"text\": \"Take 1-2 tablets every 4-6 hours as needed for pain\",\n            \"timing\": {\n                \"repeat\": {\n                    \"frequency\": 1,\n                    \"period\": 4,\n                    \"periodUnit\": \"h\"\n                }\n            },\n            \"route\": {\n                \"coding\": [\n                    {\n                        \"system\": \"http://snomed.info/sct\",\n                        \"code\": \"26643006\",\n                        \"display\": \"Oral route\"\n                    }\n                ]\n            },\n            \"doseAndRate\": [\n                {\n                    \"doseQuantity\": {\n                        \"value\": 1,\n                        \"unit\": \"tablet\",\n                        \"system\": \"http://unitsofmeasure.org\",\n                        \"code\": \"TAB\"\n                    }\n                }\n            ]\n        }\n    ],\n    \"dispenseRequest\": {\n        \"numberOfRepeatsAllowed\": 0,\n        \"quantity\": {\n            \"value\": 30,\n            \"unit\": \"tablet\",\n            \"system\": \"http://unitsofmeasure.org\",\n            \"code\": \"TAB\"\n        },\n        \"expectedSupplyDuration\": {\n            \"value\": 10,\n            \"unit\": \"days\",\n            \"system\": \"http://unitsofmeasure.org\",\n            \"code\": \"d\"\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/fhir/MedicationRequest/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "MedicationRequest", ""]
+						}
+					}
+				}
+			],
+			"description": "FHIR R4 MedicationRequest (Prescriptions) resource endpoints"
+		},
+		{
+			"name": "FHIR Invoice",
+			"item": [
+				{
+					"name": "List Invoices",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fhir/Invoice/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Invoice", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Invoice",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resourceType\": \"Invoice\",\n    \"status\": \"issued\",\n    \"date\": \"2025-10-19\",\n    \"subject\": {\n        \"reference\": \"Patient/{{patient_id}}\",\n        \"display\": \"John Smith\"\n    },\n    \"lineItem\": [\n        {\n            \"chargeItemCodeableConcept\": {\n                \"text\": \"Office Visit - General Checkup\"\n            },\n            \"priceComponent\": [\n                {\n                    \"type\": \"base\",\n                    \"amount\": {\n                        \"value\": 150.00,\n                        \"currency\": \"USD\"\n                    }\n                }\n            ]\n        },\n        {\n            \"chargeItemCodeableConcept\": {\n                \"text\": \"Blood Test Panel\"\n            },\n            \"priceComponent\": [\n                {\n                    \"type\": \"base\",\n                    \"amount\": {\n                        \"value\": 75.00,\n                        \"currency\": \"USD\"\n                    }\n                }\n            ]\n        }\n    ],\n    \"totalGross\": {\n        \"value\": 225.00,\n        \"currency\": \"USD\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/fhir/Invoice/",
+							"host": ["{{base_url}}"],
+							"path": ["fhir", "Invoice", ""]
+						}
+					}
+				}
+			],
+			"description": "FHIR R4 Invoice (Billing) resource endpoints"
+		},
+		{
+			"name": "Reports",
+			"item": [
+				{
+					"name": "List Reports",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/reports/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "reports", ""]
+						}
+					}
+				},
+				{
+					"name": "Generate Patient Report (PDF)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"report_type\": \"patients\",\n    \"format\": \"pdf\",\n    \"title\": \"Patient Demographics Report\",\n    \"filters\": {\n        \"active\": true\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/reports/generate/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "reports", "generate", ""]
+						},
+						"description": "Generate a PDF report of patient demographics"
+					}
+				},
+				{
+					"name": "Generate Appointments Report (CSV)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"report_type\": \"appointments\",\n    \"format\": \"csv\",\n    \"title\": \"Appointments Schedule Report\",\n    \"filters\": {\n        \"status\": \"booked\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/reports/generate/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "reports", "generate", ""]
+						}
+					}
+				}
+			],
+			"description": "Report generation endpoints for PDF, CSV, JSON, and TXT formats"
+		},
+		{
+			"name": "Settings",
+			"item": [
+				{
+					"name": "Get Clinic Settings",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/common/settings/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "common", "settings", ""]
+						}
+					}
+				},
+				{
+					"name": "Update Clinic Settings",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"clinic_name\": \"Springfield Healthcare Center\",\n    \"clinic_phone\": \"+1-555-0100\",\n    \"clinic_email\": \"info@springfieldhealthcare.com\",\n    \"primary_color\": \"#3B82F6\",\n    \"secondary_color\": \"#10B981\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/common/settings/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "common", "settings", ""]
+						}
+					}
+				}
+			],
+			"description": "Clinic settings and configuration endpoints"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-refresh token if expired",
+					"const tokenExpiry = pm.environment.get('token_expiry');",
+					"if (tokenExpiry && Date.now() > tokenExpiry) {",
+					"    pm.sendRequest({",
+					"        url: pm.environment.get('base_url') + '/api/auth/token/refresh/',",
+					"        method: 'POST',",
+					"        header: { 'Content-Type': 'application/json' },",
+					"        body: {",
+					"            mode: 'raw',",
+					"            raw: JSON.stringify({ refresh: pm.environment.get('refresh_token') })",
+					"        }",
+					"    }, (err, res) => {",
+					"        if (!err && res.code === 200) {",
+					"            const response = res.json();",
+					"            pm.environment.set('access_token', response.access);",
+					"            pm.environment.set('token_expiry', Date.now() + 3600000);",
+					"        }",
+					"    });",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

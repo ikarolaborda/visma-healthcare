@@ -70,3 +70,7 @@ logs/
 .build-artifacts/
 .serena/
 .claude/
+.playwright-mcp/
+
+# Documentation
+CLAUDE.md

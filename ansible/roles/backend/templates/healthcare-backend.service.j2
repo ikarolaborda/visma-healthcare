@@ -1,0 +1,20 @@
+[Unit]
+Description=Healthcare Django Backend
+After=network.target postgresql.service redis.service rabbitmq-server.service
+
+[Service]
+Type=notify
+User={{ app_user }}
+Group={{ app_group }}
+WorkingDirectory={{ app_directory }}/backend
+Environment="PATH={{ app_directory }}/backend/venv/bin"
+EnvironmentFile={{ app_directory }}/.env
+ExecStart={{ app_directory }}/backend/venv/bin/gunicorn --bind {{ gunicorn_bind }} --workers {{ gunicorn_workers }} --timeout {{ gunicorn_timeout }} config.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

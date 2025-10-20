@@ -233,6 +233,996 @@ If you prefer to set up manually:
    make seed-all
    ```
 
+## Alternative Setup (Without Docker)
+
+If Docker is unavailable or you prefer a different setup method, you can run the Healthcare Patient Management System using local installation or alternative containerization technologies.
+
+### Option 1: Local Installation (Native)
+
+This approach runs all services directly on your host operating system.
+
+#### Prerequisites
+
+- **Python**: 3.11 or higher
+- **Node.js**: 20.x or higher
+- **PostgreSQL**: 16.x
+- **Redis**: 7.x
+- **RabbitMQ**: 3.x
+- **Git**: For cloning the repository
+
+#### Ubuntu/Debian Setup
+
+1. **Install System Dependencies**:
+   ```bash
+   # Update package index
+   sudo apt update
+
+   # Install Python 3.11+
+   sudo apt install -y python3.11 python3.11-venv python3-pip
+
+   # Install PostgreSQL 16
+   sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+   wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+   sudo apt update
+   sudo apt install -y postgresql-16 postgresql-contrib-16
+
+   # Install Redis
+   sudo apt install -y redis-server
+
+   # Install RabbitMQ
+   sudo apt install -y rabbitmq-server
+
+   # Install Node.js 22.x
+   curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+   sudo apt install -y nodejs
+   ```
+
+2. **Configure PostgreSQL**:
+   ```bash
+   # Start PostgreSQL
+   sudo systemctl start postgresql
+   sudo systemctl enable postgresql
+
+   # Create database and user
+   sudo -u postgres psql << EOF
+   CREATE DATABASE healthcare_db;
+   CREATE USER healthcare_user WITH PASSWORD 'your_secure_password';
+   ALTER ROLE healthcare_user SET client_encoding TO 'utf8';
+   ALTER ROLE healthcare_user SET default_transaction_isolation TO 'read committed';
+   ALTER ROLE healthcare_user SET timezone TO 'UTC';
+   GRANT ALL PRIVILEGES ON DATABASE healthcare_db TO healthcare_user;
+   \c healthcare_db
+   GRANT ALL ON SCHEMA public TO healthcare_user;
+   EOF
+   ```
+
+3. **Configure Redis**:
+   ```bash
+   # Start Redis
+   sudo systemctl start redis-server
+   sudo systemctl enable redis-server
+
+   # Verify Redis is running
+   redis-cli ping  # Should return "PONG"
+   ```
+
+4. **Configure RabbitMQ**:
+   ```bash
+   # Start RabbitMQ
+   sudo systemctl start rabbitmq-server
+   sudo systemctl enable rabbitmq-server
+
+   # Enable management plugin (optional, for web UI)
+   sudo rabbitmq-plugins enable rabbitmq_management
+
+   # Create RabbitMQ user (optional, for security)
+   sudo rabbitmqctl add_user healthcare_user your_rabbitmq_password
+   sudo rabbitmqctl set_permissions -p / healthcare_user ".*" ".*" ".*"
+   ```
+
+5. **Clone and Setup Backend**:
+   ```bash
+   # Clone repository
+   git clone https://github.com/ikarolaborda/visma-healthcare.git
+   cd visma-healthcare
+
+   # Create and activate Python virtual environment
+   cd backend
+   python3.11 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+   # Install Python dependencies
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+6. **Configure Environment Variables**:
+   ```bash
+   # Create .env file in project root
+   cd /var/www/visma-healthcare
+   cat > .env << EOF
+   # Django Settings
+   DEBUG=True
+   SECRET_KEY=your-secret-key-change-in-production
+   ALLOWED_HOSTS=localhost,127.0.0.1
+
+   # Database
+   DB_NAME=healthcare_db
+   DB_USER=healthcare_user
+   DB_PASSWORD=your_secure_password
+   DB_HOST=localhost
+   DB_PORT=5432
+
+   # Redis
+   REDIS_URL=redis://localhost:6379/0
+
+   # RabbitMQ
+   CELERY_BROKER_URL=amqp://healthcare_user:your_rabbitmq_password@localhost:5672//
+   CELERY_RESULT_BACKEND=redis://localhost:6379/1
+
+   # CORS
+   CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080
+   OPENAI_API_KEY=
+   EOF
+   ```
+
+7. **Initialize Backend**:
+   ```bash
+   cd backend
+   source venv/bin/activate
+
+   # Run migrations
+   python manage.py migrate
+
+   # Collect static files
+   python manage.py collectstatic --noinput
+
+   # Create superuser (optional)
+   python manage.py createsuperuser
+
+   # Or create demo user
+   python manage.py shell << EOF
+   from django.contrib.auth.models import User
+   if not User.objects.filter(username='demo').exists():
+       User.objects.create_user('demo', 'demo@example.com', 'demo123')
+       print('Demo user created')
+   EOF
+
+   # Seed database (optional)
+   python seed_realistic_data.py
+   ```
+
+8. **Setup Frontend**:
+   ```bash
+   cd ../frontend
+
+   # Install dependencies
+   npm install
+
+   # Build for production
+   npm run build
+
+   # Or run development server
+   npm run dev
+   ```
+
+9. **Run All Services**:
+
+   You'll need to run multiple processes. Use separate terminal windows or a process manager:
+
+   **Terminal 1 - Django Backend**:
+   ```bash
+   cd backend
+   source venv/bin/activate
+   python manage.py runserver 0.0.0.0:8000
+   ```
+
+   **Terminal 2 - Celery Worker**:
+   ```bash
+   cd backend
+   source venv/bin/activate
+   celery -A config worker -l info
+   ```
+
+   **Terminal 3 - Celery Beat**:
+   ```bash
+   cd backend
+   source venv/bin/activate
+   celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+   ```
+
+   **Terminal 4 - Frontend** (if using dev server):
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+   **Alternative: Using tmux or screen**:
+   ```bash
+   # Install tmux
+   sudo apt install tmux
+
+   # Create tmux session
+   tmux new -s healthcare
+
+   # Split into panes (Ctrl+B then %)
+   # Run each service in a separate pane
+   ```
+
+10. **Access the Application**:
+    - Frontend (dev): http://localhost:5173
+    - Backend API: http://localhost:8000
+    - API Documentation: http://localhost:8000/api/docs/
+    - Django Admin: http://localhost:8000/admin/
+    - RabbitMQ Management: http://localhost:15672 (guest/guest)
+
+#### macOS Setup
+
+1. **Install Homebrew** (if not installed):
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   # Install Python
+   brew install python@3.11
+
+   # Install PostgreSQL
+   brew install postgresql@16
+
+   # Install Redis
+   brew install redis
+
+   # Install RabbitMQ
+   brew install rabbitmq
+
+   # Install Node.js
+   brew install node@18
+   ```
+
+3. **Start Services**:
+   ```bash
+   # Start PostgreSQL
+   brew services start postgresql@16
+
+   # Start Redis
+   brew services start redis
+
+   # Start RabbitMQ
+   brew services start rabbitmq
+   ```
+
+4. **Create Database**:
+   ```bash
+   createdb healthcare_db
+   psql healthcare_db << EOF
+   CREATE USER healthcare_user WITH PASSWORD 'your_secure_password';
+   GRANT ALL PRIVILEGES ON DATABASE healthcare_db TO healthcare_user;
+   \c healthcare_db
+   GRANT ALL ON SCHEMA public TO healthcare_user;
+   EOF
+   ```
+
+5. **Follow steps 5-10 from Ubuntu/Debian setup** for backend, frontend, and running services.
+
+#### Windows Setup
+
+1. **Install Python 3.11+**:
+   - Download from: https://www.python.org/downloads/
+   - Check "Add Python to PATH" during installation
+
+2. **Install PostgreSQL 16**:
+   - Download from: https://www.postgresql.org/download/windows/
+   - Run installer and note the password you set for the postgres user
+
+3. **Install Redis**:
+   - Download from: https://github.com/microsoftarchive/redis/releases
+   - Or use Windows Subsystem for Linux (WSL)
+
+4. **Install RabbitMQ**:
+   - Install Erlang first: https://www.erlang.org/downloads
+   - Download RabbitMQ: https://www.rabbitmq.com/install-windows.html
+
+5. **Install Node.js 18.x**:
+   - Download from: https://nodejs.org/
+
+6. **Create Database**:
+   ```cmd
+   # Open PostgreSQL SQL Shell (psql)
+   CREATE DATABASE healthcare_db;
+   CREATE USER healthcare_user WITH PASSWORD 'your_secure_password';
+   GRANT ALL PRIVILEGES ON DATABASE healthcare_db TO healthcare_user;
+   ```
+
+7. **Setup Project**:
+   ```cmd
+   # Clone repository
+   git clone https://github.com/ikarolaborda/visma-healthcare.git
+   cd visma-healthcare
+
+   # Setup backend
+   cd backend
+   python -m venv venv
+   venv\Scripts\activate
+   pip install -r requirements.txt
+
+   # Run migrations
+   python manage.py migrate
+   python manage.py collectstatic --noinput
+
+   # Setup frontend
+   cd ..\frontend
+   npm install
+   npm run build
+   ```
+
+8. **Run services** in separate Command Prompt windows as described in step 9 of Ubuntu setup.
+
+#### Using Process Managers (Production)
+
+For production deployments on native systems, use a process manager:
+
+**Systemd (Linux)**:
+
+Create service files in `/etc/systemd/system/`:
+
+```ini
+# /etc/systemd/system/healthcare-backend.service
+[Unit]
+Description=Healthcare Django Backend
+After=network.target postgresql.service redis.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/visma-healthcare/backend
+Environment="PATH=/var/www/visma-healthcare/backend/venv/bin"
+EnvironmentFile=/var/www/visma-healthcare/.env
+ExecStart=/var/www/visma-healthcare/backend/venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 4 config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable healthcare-backend
+sudo systemctl start healthcare-backend
+```
+
+**Supervisor (Cross-platform)**:
+```bash
+# Install supervisor
+sudo apt install supervisor  # Ubuntu/Debian
+brew install supervisor      # macOS
+
+# Create config file
+sudo nano /etc/supervisor/conf.d/healthcare.conf
+```
+
+```ini
+[program:healthcare-backend]
+command=/var/www/visma-healthcare/backend/venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 4 config.wsgi:application
+directory=/var/www/visma-healthcare/backend
+user=www-data
+autostart=true
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/var/log/healthcare/backend.log
+
+[program:healthcare-celery-worker]
+command=/var/www/visma-healthcare/backend/venv/bin/celery -A config worker -l info
+directory=/var/www/visma-healthcare/backend
+user=www-data
+autostart=true
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/var/log/healthcare/celery-worker.log
+
+[program:healthcare-celery-beat]
+command=/var/www/visma-healthcare/backend/venv/bin/celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+directory=/var/www/visma-healthcare/backend
+user=www-data
+autostart=true
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/var/log/healthcare/celery-beat.log
+```
+
+Start services:
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start all
+```
+
+### Option 2: Podman (Docker Alternative)
+
+Podman is a daemonless container engine that's compatible with Docker commands and Docker Compose files.
+
+#### Install Podman
+
+**Ubuntu/Debian**:
+```bash
+sudo apt update
+sudo apt install -y podman podman-compose
+```
+
+**macOS**:
+```bash
+brew install podman podman-compose
+```
+
+**Fedora/RHEL**:
+```bash
+sudo dnf install -y podman podman-compose
+```
+
+#### Run the Application
+
+```bash
+# Clone repository
+git clone https://github.com/ikarolaborda/visma-healthcare.git
+cd visma-healthcare
+
+# Copy environment file
+cp .env.example .env
+
+# Build and start with podman-compose
+podman-compose build
+podman-compose up -d
+
+# Run migrations
+podman-compose exec backend python manage.py migrate
+podman-compose exec backend python manage.py collectstatic --noinput
+
+# Create demo user
+podman-compose exec backend python manage.py shell << EOF
+from django.contrib.auth.models import User
+if not User.objects.filter(username='demo').exists():
+    User.objects.create_user('demo', 'demo@example.com', 'demo123')
+EOF
+
+# Seed database
+podman-compose exec backend python seed_realistic_data.py
+```
+
+**Note**: Most `docker` and `docker compose` commands work with `podman` and `podman-compose` respectively.
+
+### Option 3: LXC/LXD Containers
+
+LXC/LXD provides system containers that are more lightweight than VMs.
+
+#### Install LXD
+
+**Ubuntu**:
+```bash
+sudo snap install lxd
+sudo lxd init  # Follow the prompts
+```
+
+#### Create Container
+
+```bash
+# Launch Ubuntu container
+lxc launch ubuntu:22.04 healthcare-app
+
+# Enter container
+lxc exec healthcare-app -- bash
+
+# Inside container, follow Ubuntu/Debian native setup instructions
+# ... (steps 1-10 from Option 1)
+
+# Exit container
+exit
+
+# Access from host
+lxc list  # Get container IP
+# Access at http://<container-ip>:8000
+```
+
+### Option 4: Vagrant (Virtual Machine)
+
+Vagrant provides reproducible development environments using VMs.
+
+#### Install Vagrant
+
+Download from: https://www.vagrantup.com/downloads
+
+#### Create Vagrantfile
+
+Create `Vagrantfile` in the project root:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+
+  config.vm.network "forwarded_port", guest: 8000, host: 8000
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.network "forwarded_port", guest: 5432, host: 5432
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "4096"
+    vb.cpus = 2
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    # Update system
+    apt-get update
+
+    # Install dependencies
+    apt-get install -y python3.11 python3.11-venv python3-pip \
+                       postgresql-16 redis-server rabbitmq-server \
+                       nodejs npm git
+
+    # Setup database
+    sudo -u postgres psql -c "CREATE DATABASE healthcare_db;"
+    sudo -u postgres psql -c "CREATE USER healthcare_user WITH PASSWORD 'vagrant123';"
+    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE healthcare_db TO healthcare_user;"
+
+    # Clone and setup project
+    cd /vagrant
+    cd backend
+    python3.11 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    python manage.py migrate
+    python manage.py collectstatic --noinput
+
+    cd ../frontend
+    npm install
+    npm run build
+  SHELL
+end
+```
+
+#### Start Vagrant VM
+
+```bash
+# Start VM
+vagrant up
+
+# SSH into VM
+vagrant ssh
+
+# Run services
+cd /vagrant/backend
+source venv/bin/activate
+python manage.py runserver 0.0.0.0:8000
+```
+
+Access at: http://localhost:8000
+
+### Option 5: containerd with nerdctl
+
+containerd is a container runtime, and nerdctl is a Docker-compatible CLI.
+
+#### Install containerd and nerdctl
+
+**Ubuntu/Debian**:
+```bash
+# Install containerd
+sudo apt install -y containerd
+
+# Install nerdctl
+wget https://github.com/containerd/nerdctl/releases/download/v1.7.0/nerdctl-1.7.0-linux-amd64.tar.gz
+sudo tar Cxzvvf /usr/local/bin nerdctl-1.7.0-linux-amd64.tar.gz
+```
+
+#### Run with nerdctl
+
+```bash
+# Use nerdctl with docker-compose.yml (requires buildkit)
+nerdctl compose up -d
+
+# Or use nerdctl commands similar to docker
+nerdctl build -t healthcare-backend ./backend
+nerdctl run -d -p 8000:8000 healthcare-backend
+```
+
+### Troubleshooting Non-Docker Setups
+
+#### PostgreSQL Connection Issues
+```bash
+# Check PostgreSQL is running
+sudo systemctl status postgresql
+
+# Check PostgreSQL logs
+sudo tail -f /var/log/postgresql/postgresql-16-main.log
+
+# Test connection
+psql -h localhost -U healthcare_user -d healthcare_db
+```
+
+#### Redis Connection Issues
+```bash
+# Check Redis is running
+sudo systemctl status redis-server
+
+# Test connection
+redis-cli ping
+
+# Check Redis logs
+sudo tail -f /var/log/redis/redis-server.log
+```
+
+#### RabbitMQ Connection Issues
+```bash
+# Check RabbitMQ status
+sudo systemctl status rabbitmq-server
+
+# Check RabbitMQ logs
+sudo tail -f /var/log/rabbitmq/rabbit@hostname.log
+
+# List users
+sudo rabbitmqctl list_users
+```
+
+#### Python Virtual Environment Issues
+```bash
+# Ensure you're in the virtual environment
+which python  # Should show venv path
+
+# Recreate virtual environment
+rm -rf venv
+python3.11 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+#### Port Conflicts
+```bash
+# Find process using a port
+sudo lsof -i :8000
+sudo netstat -tulpn | grep :8000
+
+# Kill process
+sudo kill -9 <PID>
+```
+
+#### Permission Issues
+```bash
+# Fix ownership
+sudo chown -R $USER:$USER /var/www/visma-healthcare
+
+# Fix PostgreSQL permissions
+sudo -u postgres psql healthcare_db -c "GRANT ALL ON SCHEMA public TO healthcare_user;"
+```
+
+### Option 6: Ansible Automation (Recommended for Production)
+
+Ansible provides automated, repeatable, and production-ready deployment with infrastructure as code.
+
+#### What is Ansible?
+
+Ansible is an open-source automation tool that simplifies:
+- **Infrastructure provisioning**: Automated server setup
+- **Configuration management**: Consistent configuration across servers
+- **Application deployment**: Repeatable deployments
+- **Multi-server orchestration**: Deploy to multiple servers simultaneously
+
+#### Why Use Ansible?
+
+- **Idempotent**: Safe to run multiple times
+- **Agentless**: No software to install on target servers
+- **YAML-based**: Human-readable configuration
+- **Production-ready**: Includes systemd services, Nginx, and proper logging
+- **Scalable**: Deploy to multiple servers with one command
+- **Reproducible**: Same results every time
+
+#### Prerequisites
+
+**On your local machine (control node):**
+```bash
+# Ubuntu/Debian
+sudo apt install ansible
+
+# macOS
+brew install ansible
+
+# Python pip
+pip install ansible
+```
+
+**Target server requirements:**
+- Ubuntu 20.04+ or Debian 11+
+- SSH access with sudo privileges
+- 4GB+ RAM (8GB recommended)
+- 20GB+ free disk space
+
+#### Quick Start (One Command!)
+
+**Local Deployment:**
+```bash
+# Option 1: Using the deployment script
+cd ansible
+./deploy.sh
+
+# Option 2: Using Makefile
+make ansible-deploy
+```
+
+**Remote Deployment:**
+```bash
+# Option 1: Using the deployment script
+cd ansible
+./deploy.sh --remote 192.168.1.100
+
+# Option 2: Using Makefile
+make ansible-deploy-remote HOST=192.168.1.100
+```
+
+That's it! The script will:
+- ✅ Auto-install Ansible if needed
+- ✅ Generate secure secrets automatically
+- ✅ Create all configuration files
+- ✅ Deploy the complete application stack
+- ✅ Set up systemd services
+- ✅ Create demo user and seed database
+
+**Access your application** (after 10-15 minutes):
+- **Frontend**: http://localhost/ (or http://your-server-ip/)
+- **Backend API**: http://localhost:8000/
+- **API Docs**: http://localhost:8000/api/docs/
+- **Demo login**: username `demo`, password `demo123`
+
+#### Manual Configuration (Optional)
+
+If you prefer manual configuration instead of the automated script:
+
+1. **Install Ansible**:
+   ```bash
+   # Ubuntu/Debian
+   sudo apt install ansible
+
+   # macOS
+   brew install ansible
+   ```
+
+2. **Configure servers** - Edit `ansible/inventory/hosts.ini`:
+   ```ini
+   [healthcare_servers]
+   localhost ansible_connection=local
+   ```
+
+3. **Configure variables** - Edit `ansible/inventory/group_vars/all.yml`:
+   ```yaml
+   django_secret_key: "your-secure-random-string"
+   db_password: "your-secure-password"
+   rabbitmq_password: "your-secure-password"
+   nginx_server_name: "localhost"
+   ```
+
+4. **Run playbook**:
+   ```bash
+   cd ansible
+   ansible-playbook -i inventory/hosts.ini playbook.yml
+   ```
+
+#### What Gets Deployed
+
+The Ansible playbook automatically:
+
+1. **System Setup**:
+   - Installs Python 3.11, Node.js 18, and system dependencies
+   - Creates dedicated application user
+   - Clones the repository
+
+2. **Infrastructure**:
+   - PostgreSQL 16 with configured database and user
+   - Redis 7 for caching
+   - RabbitMQ 3 for message queuing
+
+3. **Application**:
+   - Django backend with Gunicorn
+   - Vue.js frontend with Nginx
+   - Celery workers for async tasks
+
+4. **Services**:
+   - All components configured as systemd services
+   - Auto-start on system boot
+   - Proper logging to `/var/log/healthcare/`
+
+5. **Initial Data** (optional):
+   - Demo user creation
+   - Database seeding with sample data
+
+#### Deployment Options
+
+**Deploy specific components:**
+```bash
+# Only infrastructure (database, cache, messaging)
+ansible-playbook -i inventory/hosts.ini playbook.yml --tags "setup"
+
+# Only application (backend, frontend, workers)
+ansible-playbook -i inventory/hosts.ini playbook.yml --tags "app"
+
+# Only backend
+ansible-playbook -i inventory/hosts.ini playbook.yml --tags "backend"
+
+# Only frontend
+ansible-playbook -i inventory/hosts.ini playbook.yml --tags "frontend"
+```
+
+**Test before deploying:**
+```bash
+# Dry run (check what would change)
+ansible-playbook -i inventory/hosts.ini playbook.yml --check
+
+# Verbose output
+ansible-playbook -i inventory/hosts.ini playbook.yml -v
+```
+
+**Advanced deployment options:**
+```bash
+# Deploy with custom SSH user
+./deploy.sh --remote 192.168.1.100 --user admin
+
+# Deploy with specific SSH key
+./deploy.sh --remote 192.168.1.100 --key ~/.ssh/my-key.pem
+
+# Interactive mode (asks questions)
+./deploy.sh --interactive
+
+# Show all options
+./deploy.sh --help
+```
+
+**Update existing deployment:**
+```bash
+# Update application code only
+make ansible-update
+
+# Update backend only
+make ansible-backend
+
+# Update frontend only
+make ansible-frontend
+
+# Check what would change
+make ansible-check
+```
+
+#### Managing Services
+
+After deployment, manage services via systemd:
+
+```bash
+# Check status
+sudo systemctl status healthcare-backend
+sudo systemctl status healthcare-celery-worker
+sudo systemctl status healthcare-celery-beat
+
+# Restart services
+sudo systemctl restart healthcare-backend
+sudo systemctl restart healthcare-celery-worker
+
+# View logs
+sudo journalctl -u healthcare-backend -f
+sudo journalctl -u healthcare-celery-worker -f
+
+# View application logs
+tail -f /var/log/healthcare/backend.log
+tail -f /var/log/healthcare/celery-worker.log
+```
+
+#### Updating the Application
+
+To update to the latest version:
+
+```bash
+# Re-run the playbook (only updates changed components)
+ansible-playbook -i inventory/hosts.ini playbook.yml --tags "app"
+```
+
+#### Security Best Practices
+
+1. **Encrypt sensitive data** with Ansible Vault:
+   ```bash
+   ansible-vault encrypt inventory/group_vars/all.yml
+   ansible-vault edit inventory/group_vars/all.yml
+   ```
+
+2. **Use strong passwords** in `all.yml`:
+   - `django_secret_key`: Generate with `python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'`
+   - `db_password`: Use strong random password
+   - `rabbitmq_password`: Use strong random password
+
+3. **Configure firewall**:
+   ```bash
+   sudo ufw allow 22    # SSH
+   sudo ufw allow 80    # HTTP
+   sudo ufw allow 443   # HTTPS
+   sudo ufw enable
+   ```
+
+4. **Enable SSL** with Let's Encrypt:
+   ```bash
+   sudo apt install certbot python3-certbot-nginx
+   sudo certbot --nginx -d your-domain.com
+   ```
+
+#### Multi-Server Deployment
+
+Deploy to multiple servers simultaneously:
+
+```ini
+# inventory/hosts.ini
+[healthcare_servers]
+production-1 ansible_host=192.168.1.100 ansible_user=ubuntu
+production-2 ansible_host=192.168.1.101 ansible_user=ubuntu
+staging ansible_host=192.168.1.102 ansible_user=ubuntu
+```
+
+Run playbook on all servers:
+```bash
+ansible-playbook -i inventory/hosts.ini playbook.yml
+```
+
+Or target specific servers:
+```bash
+ansible-playbook -i inventory/hosts.ini playbook.yml --limit production-1
+```
+
+#### Customization
+
+Edit `inventory/group_vars/all.yml` to customize:
+
+```yaml
+# Performance tuning
+gunicorn_workers: 4              # Gunicorn worker processes
+celery_worker_concurrency: 4     # Celery worker processes
+gunicorn_timeout: 120            # Request timeout
+
+# Features
+create_demo_user: true           # Create demo account
+seed_database: true              # Add sample data
+run_migrations: true             # Run database migrations
+
+# Application
+app_directory: /var/www/visma-healthcare
+app_branch: main                 # Git branch to deploy
+```
+
+#### Troubleshooting
+
+**Test connectivity:**
+```bash
+ansible -i inventory/hosts.ini healthcare_servers -m ping
+```
+
+**Check what would change:**
+```bash
+ansible-playbook -i inventory/hosts.ini playbook.yml --check --diff
+```
+
+**View detailed logs:**
+```bash
+# On the server
+sudo journalctl -u healthcare-backend -n 100
+tail -f /var/log/healthcare/backend.log
+tail -f /var/log/nginx/healthcare-error.log
+```
+
+**Re-run failed tasks:**
+```bash
+ansible-playbook -i inventory/hosts.ini playbook.yml --start-at-task="Install Python dependencies"
+```
+
+#### Documentation
+
+For detailed Ansible documentation, see: [ansible/README.md](ansible/README.md)
+
+Includes:
+- Complete variable reference
+- Advanced deployment scenarios
+- Service management
+- Backup strategies
+- Multi-environment setup
+- CI/CD integration
+
 ## Authentication
 
 The API uses JWT (JSON Web Tokens) for authentication. All Patient API endpoints require authentication.

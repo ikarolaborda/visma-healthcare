@@ -1,0 +1,98 @@
+---
+# Healthcare Patient Management System - Ansible Playbook
+# This playbook deploys the complete Healthcare application stack
+# including PostgreSQL, Redis, RabbitMQ, Django backend, Vue frontend, and Celery workers
+
+- name: Deploy Healthcare Patient Management System
+  hosts: healthcare_servers
+  become: yes
+  gather_facts: yes
+
+  vars_files:
+    - inventory/group_vars/all.yml
+
+  pre_tasks:
+    - name: Display deployment information
+      debug:
+        msg: |
+          Deploying Healthcare Patient Management System
+          Target: {{ inventory_hostname }}
+          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          App Directory: {{ app_directory }}
+
+    - name: Validate required variables
+      assert:
+        that:
+          - app_directory is defined
+          - app_user is defined
+          - db_password is defined
+          - django_secret_key is defined
+        fail_msg: "Required variables are not defined. Please check inventory/group_vars/all.yml"
+
+  roles:
+    - role: common
+      tags: ['common', 'setup']
+
+    - role: postgresql
+      tags: ['postgresql', 'database', 'setup']
+
+    - role: redis
+      tags: ['redis', 'cache', 'setup']
+
+    - role: rabbitmq
+      tags: ['rabbitmq', 'messaging', 'setup']
+
+    - role: backend
+      tags: ['backend', 'django', 'app']
+
+    - role: frontend
+      tags: ['frontend', 'vue', 'nginx', 'app']
+
+    - role: celery
+      tags: ['celery', 'workers', 'app']
+
+  post_tasks:
+    - name: Display deployment summary
+      debug:
+        msg: |
+          ====================================
+          Deployment Complete!
+          ====================================
+          Frontend URL: http://{{ ansible_host }}
+          Backend API: http://{{ ansible_host }}:8000
+          API Docs: http://{{ ansible_host }}:8000/api/docs/
+          Django Admin: http://{{ ansible_host }}:8000/admin/
+          RabbitMQ Management: http://{{ ansible_host }}:15672
+
+          Default demo user:
+          Username: demo
+          Password: demo123
+
+          Service Status:
+          - PostgreSQL: Active
+          - Redis: Active
+          - RabbitMQ: Active
+          - Healthcare Backend: Active
+          - Healthcare Frontend: Active
+          - Celery Worker: Active
+          - Celery Beat: Active
+
+    - name: Verify all services are running
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - postgresql
+        - redis
+        - rabbitmq-server
+        - healthcare-backend
+        - healthcare-celery-worker
+        - healthcare-celery-beat
+      register: service_status
+      failed_when: false
+
+    - name: Display service status
+      debug:
+        msg: "All services are running successfully!"
+      when: service_status is succeeded

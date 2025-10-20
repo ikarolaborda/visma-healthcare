@@ -1,0 +1,34 @@
+# Ansible sensitive files
+*.vault
+*.vault.yml
+secrets.yml
+vault-password.txt
+.deployment-secrets.txt
+
+# Auto-generated configuration
+inventory/hosts.ini
+inventory/group_vars/all.yml
+
+# Ansible retry files
+*.retry
+
+# Backup files
+*.bak
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/

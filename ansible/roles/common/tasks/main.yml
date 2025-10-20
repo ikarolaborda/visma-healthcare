@@ -1,0 +1,94 @@
+---
+# Common role - System preparation and basic dependencies
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Install common system packages
+  apt:
+    name:
+      - git
+      - curl
+      - wget
+      - build-essential
+      - software-properties-common
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - lsb-release
+      - acl
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Add deadsnakes PPA for Python {{ python_version }}
+  apt_repository:
+    repo: ppa:deadsnakes/ppa
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install Python {{ python_version }} and dependencies
+  apt:
+    name:
+      - python{{ python_version }}
+      - python{{ python_version }}-venv
+      - python{{ python_version }}-dev
+      - python3-pip
+      - libpq-dev
+    state: present
+
+- name: Add NodeSource repository for Node.js {{ nodejs_version }}
+  shell: |
+    curl -fsSL https://deb.nodesource.com/setup_{{ nodejs_version }} | bash -
+  args:
+    creates: /etc/apt/sources.list.d/nodesource.list
+
+- name: Install Node.js
+  apt:
+    name: nodejs
+    state: present
+    update_cache: yes
+
+- name: Create application user
+  user:
+    name: "{{ app_user }}"
+    group: "{{ app_group }}"
+    system: yes
+    create_home: yes
+    home: "{{ app_directory }}"
+    shell: /bin/bash
+    state: present
+
+- name: Create application directory
+  file:
+    path: "{{ app_directory }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0755'
+
+- name: Create log directory
+  file:
+    path: /var/log/{{ app_name }}
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0755'
+
+- name: Clone application repository
+  git:
+    repo: "{{ app_repository }}"
+    dest: "{{ app_directory }}"
+    version: "{{ app_branch }}"
+    force: yes
+  become_user: "{{ app_user }}"
+  when: app_repository is defined
+
+- name: Set proper ownership for application directory
+  file:
+    path: "{{ app_directory }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    recurse: yes

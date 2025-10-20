@@ -1,0 +1,39 @@
+---
+# RabbitMQ role - Message broker installation and configuration
+
+- name: Install RabbitMQ
+  apt:
+    name:
+      - rabbitmq-server
+    state: present
+
+- name: Ensure RabbitMQ is started and enabled
+  service:
+    name: rabbitmq-server
+    state: started
+    enabled: yes
+
+- name: Enable RabbitMQ management plugin
+  rabbitmq_plugin:
+    name: rabbitmq_management
+    state: enabled
+  notify: restart rabbitmq
+
+- name: Create RabbitMQ application user
+  rabbitmq_user:
+    user: "{{ rabbitmq_user }}"
+    password: "{{ rabbitmq_password }}"
+    vhost: "{{ rabbitmq_vhost }}"
+    configure_priv: .*
+    read_priv: .*
+    write_priv: .*
+    state: present
+
+- name: Set RabbitMQ user permissions
+  rabbitmq_user:
+    user: "{{ rabbitmq_user }}"
+    vhost: "{{ rabbitmq_vhost }}"
+    configure_priv: .*
+    read_priv: .*
+    write_priv: .*
+    state: present

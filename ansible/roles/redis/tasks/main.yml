@@ -1,0 +1,36 @@
+---
+# Redis role - Cache server installation and configuration
+
+- name: Install Redis
+  apt:
+    name:
+      - redis-server
+      - python3-redis
+    state: present
+
+- name: Configure Redis to listen on localhost
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: "^bind"
+    line: "bind 127.0.0.1 ::1"
+  notify: restart redis
+
+- name: Enable Redis persistence (AOF)
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: "^appendonly"
+    line: "appendonly yes"
+  notify: restart redis
+
+- name: Set Redis max memory policy
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: "^maxmemory-policy"
+    line: "maxmemory-policy allkeys-lru"
+  notify: restart redis
+
+- name: Ensure Redis is started and enabled
+  service:
+    name: redis-server
+    state: started
+    enabled: yes

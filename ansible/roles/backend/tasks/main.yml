@@ -1,0 +1,89 @@
+---
+# Backend role - Django application setup
+
+- name: Create Python virtual environment
+  command: python{{ python_version }} -m venv {{ app_directory }}/backend/venv
+  args:
+    creates: "{{ app_directory }}/backend/venv"
+  become_user: "{{ app_user }}"
+
+- name: Upgrade pip in virtual environment
+  pip:
+    name: pip
+    state: latest
+    virtualenv: "{{ app_directory }}/backend/venv"
+    virtualenv_python: python{{ python_version }}
+  become_user: "{{ app_user }}"
+
+- name: Install Python dependencies
+  pip:
+    requirements: "{{ app_directory }}/backend/requirements.txt"
+    virtualenv: "{{ app_directory }}/backend/venv"
+  become_user: "{{ app_user }}"
+
+- name: Create .env file from template
+  template:
+    src: env.j2
+    dest: "{{ app_directory }}/.env"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0600'
+
+- name: Run database migrations
+  django_manage:
+    command: migrate
+    app_path: "{{ app_directory }}/backend"
+    virtualenv: "{{ app_directory }}/backend/venv"
+  become_user: "{{ app_user }}"
+  when: run_migrations
+
+- name: Collect static files
+  django_manage:
+    command: collectstatic
+    app_path: "{{ app_directory }}/backend"
+    virtualenv: "{{ app_directory }}/backend/venv"
+  become_user: "{{ app_user }}"
+  when: collect_static
+
+- name: Create demo user
+  shell: |
+    source {{ app_directory }}/backend/venv/bin/activate
+    python {{ app_directory }}/backend/manage.py shell << 'EOF'
+    from django.contrib.auth.models import User
+    if not User.objects.filter(username='demo').exists():
+        User.objects.create_user('demo', 'demo@example.com', 'demo123')
+        print('Demo user created')
+    else:
+        print('Demo user already exists')
+    EOF
+  args:
+    executable: /bin/bash
+  become_user: "{{ app_user }}"
+  when: create_demo_user
+  register: demo_user_result
+  changed_when: "'Demo user created' in demo_user_result.stdout"
+
+- name: Seed database with realistic data
+  shell: |
+    source {{ app_directory }}/backend/venv/bin/activate
+    python {{ app_directory }}/backend/seed_realistic_data.py
+  args:
+    executable: /bin/bash
+  become_user: "{{ app_user }}"
+  when: seed_database
+  ignore_errors: yes
+
+- name: Create systemd service for backend
+  template:
+    src: healthcare-backend.service.j2
+    dest: /etc/systemd/system/healthcare-backend.service
+    mode: '0644'
+  notify:
+    - reload systemd
+    - restart backend
+
+- name: Enable and start backend service
+  service:
+    name: healthcare-backend
+    state: started
+    enabled: yes

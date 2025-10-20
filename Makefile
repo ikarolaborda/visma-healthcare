@@ -275,3 +275,41 @@ restore-db: ## Restore database from backup.sql
 	@echo "$(YELLOW)Restoring database from backup.sql...$(NC)"
 	docker compose exec -T db psql -U postgres healthcare_db < backup.sql
 	@echo "$(GREEN)Database restored!$(NC)"
+
+##@ Ansible Deployment (Docker Alternative)
+
+ansible-deploy: ## Deploy entire application with Ansible (local, one command)
+	@echo "$(GREEN)Starting Ansible deployment...$(NC)"
+	@cd ansible && ./deploy.sh
+	@echo "$(GREEN)Ansible deployment complete!$(NC)"
+
+ansible-deploy-remote: ## Deploy to remote server (usage: make ansible-deploy-remote HOST=192.168.1.100)
+	@echo "$(GREEN)Starting Ansible deployment to remote server...$(NC)"
+	@if [ -z "$(HOST)" ]; then \
+		echo "$(YELLOW)Usage: make ansible-deploy-remote HOST=192.168.1.100$(NC)"; \
+		exit 1; \
+	fi
+	@cd ansible && ./deploy.sh --remote $(HOST)
+	@echo "$(GREEN)Ansible deployment complete!$(NC)"
+
+ansible-update: ## Update deployed application (re-run playbook)
+	@echo "$(GREEN)Updating application via Ansible...$(NC)"
+	@cd ansible && ansible-playbook -i inventory/hosts.ini playbook.yml --tags app
+	@echo "$(GREEN)Application updated!$(NC)"
+
+ansible-check: ## Check what Ansible would change (dry run)
+	@echo "$(GREEN)Running Ansible check (dry run)...$(NC)"
+	@cd ansible && ansible-playbook -i inventory/hosts.ini playbook.yml --check
+
+ansible-backend: ## Deploy/update only backend
+	@echo "$(GREEN)Deploying backend via Ansible...$(NC)"
+	@cd ansible && ansible-playbook -i inventory/hosts.ini playbook.yml --tags backend
+
+ansible-frontend: ## Deploy/update only frontend
+	@echo "$(GREEN)Deploying frontend via Ansible...$(NC)"
+	@cd ansible && ansible-playbook -i inventory/hosts.ini playbook.yml --tags frontend
+
+ansible-clean: ## Clean Ansible generated files
+	@echo "$(YELLOW)Cleaning Ansible generated files...$(NC)"
+	@cd ansible && rm -f .deployment-secrets.txt inventory/hosts.ini inventory/group_vars/all.yml
+	@echo "$(GREEN)Cleaned!$(NC)"

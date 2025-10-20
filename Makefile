@@ -13,9 +13,9 @@ help: ## Show this help message
 
 ##@ Docker Commands
 
-build: ## Build all Docker images
+build: ## Build all Docker images (with retry on failure)
 	@echo "$(GREEN)Building Docker images...$(NC)"
-	docker compose build
+	@bash scripts/docker-build-retry.sh
 
 up: ## Start all services in detached mode
 	@echo "$(GREEN)Starting services...$(NC)"

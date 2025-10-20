@@ -1,0 +1,18 @@
+[Unit]
+Description=Healthcare Celery Beat Scheduler
+After=network.target rabbitmq-server.service redis.service
+
+[Service]
+Type=simple
+User={{ app_user }}
+Group={{ app_group }}
+WorkingDirectory={{ app_directory }}/backend
+Environment="PATH={{ app_directory }}/backend/venv/bin"
+EnvironmentFile={{ app_directory }}/.env
+ExecStart={{ app_directory }}/backend/venv/bin/celery -A config beat -l {{ celery_worker_log_level }} --scheduler django_celery_beat.schedulers:DatabaseScheduler --pidfile=/var/run/celery/beat.pid --logfile=/var/log/{{ app_name }}/celery-beat.log
+Restart=on-failure
+RuntimeDirectory=celery
+RuntimeDirectoryMode=0755
+
+[Install]
+WantedBy=multi-user.target

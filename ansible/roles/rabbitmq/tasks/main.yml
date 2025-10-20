@@ -1,0 +1,35 @@
+---
+# RabbitMQ role - Message broker for Celery
+
+- name: Install RabbitMQ
+  apt:
+    name:
+      - rabbitmq-server
+    state: present
+
+- name: Ensure RabbitMQ is running
+  service:
+    name: rabbitmq-server
+    state: started
+    enabled: yes
+
+- name: Create RabbitMQ vhost
+  rabbitmq_vhost:
+    name: "{{ rabbitmq_vhost }}"
+    state: present
+
+- name: Create RabbitMQ user
+  rabbitmq_user:
+    user: "{{ rabbitmq_user }}"
+    password: "{{ rabbitmq_password }}"
+    vhost: "{{ rabbitmq_vhost }}"
+    configure_priv: .*
+    read_priv: .*
+    write_priv: .*
+    state: present
+
+- name: Set RabbitMQ user tags
+  rabbitmq_user:
+    user: "{{ rabbitmq_user }}"
+    tags: administrator
+    state: present

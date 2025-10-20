@@ -1,0 +1,104 @@
+---
+# Healthcare Application Deployment Playbook
+# This playbook deploys the complete Healthcare application stack
+
+- name: Deploy Healthcare Application
+  hosts: healthcare_servers
+  become: yes
+  
+  pre_tasks:
+    - name: Display deployment information
+      debug:
+        msg: |
+          ========================================
+          Healthcare Application Deployment
+          ========================================
+          App Name: {{ app_name }}
+          App Directory: {{ app_directory }}
+          App User: {{ app_user }}
+          Python Version: {{ python_version }}
+          Node.js Version: {{ nodejs_version }}
+          PostgreSQL Version: {{ postgresql_version }}
+          ========================================
+
+    - name: Update apt cache (Debian/Ubuntu)
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+  roles:
+    - role: common
+      tags: ['common', 'base']
+      
+    - role: postgresql
+      tags: ['postgresql', 'database']
+      
+    - role: redis
+      tags: ['redis', 'cache']
+      
+    - role: rabbitmq
+      tags: ['rabbitmq', 'messaging']
+      
+    - role: backend
+      tags: ['backend', 'django', 'api']
+      
+    - role: frontend
+      tags: ['frontend', 'nginx', 'vue']
+      
+    - role: celery
+      tags: ['celery', 'workers']
+
+  post_tasks:
+    - name: Display deployment summary
+      debug:
+        msg: |
+          ========================================
+          Deployment Complete!
+          ========================================
+          Frontend:      http://{{ nginx_server_name }}:{{ nginx_port }}
+          Backend API:   http://{{ nginx_server_name }}:{{ nginx_port }}/api/
+          FHIR API:      http://{{ nginx_server_name }}:{{ nginx_port }}/fhir/
+          Admin Panel:   http://{{ nginx_server_name }}:{{ nginx_port }}/admin/
+          ========================================
+          
+          Service Status Commands:
+          - Backend:       systemctl status healthcare-backend
+          - Celery Worker: systemctl status healthcare-celery-worker  
+          - Celery Beat:   systemctl status healthcare-celery-beat
+          - Nginx:         systemctl status nginx
+          - PostgreSQL:    systemctl status postgresql
+          - Redis:         systemctl status redis
+          - RabbitMQ:      systemctl status rabbitmq-server
+          ========================================
+
+    - name: Verify all services are running
+      service_facts:
+
+    - name: Check backend service
+      assert:
+        that:
+          - ansible_facts.services['healthcare-backend.service'].state == 'running'
+        fail_msg: "Healthcare backend service is not running"
+        success_msg: "Healthcare backend service is running"
+
+    - name: Check celery worker service
+      assert:
+        that:
+          - ansible_facts.services['healthcare-celery-worker.service'].state == 'running'
+        fail_msg: "Celery worker service is not running"
+        success_msg: "Celery worker service is running"
+
+    - name: Check celery beat service
+      assert:
+        that:
+          - ansible_facts.services['healthcare-celery-beat.service'].state == 'running'
+        fail_msg: "Celery beat service is not running"
+        success_msg: "Celery beat service is running"
+
+    - name: Check nginx service
+      assert:
+        that:
+          - ansible_facts.services['nginx.service'].state == 'running'
+        fail_msg: "Nginx service is not running"
+        success_msg: "Nginx service is running"

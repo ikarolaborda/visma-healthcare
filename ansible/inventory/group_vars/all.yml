@@ -1,0 +1,59 @@
+---
+# Application Configuration
+app_name: healthcare
+app_directory: /var/www/visma-healthcare
+app_user: healthcare
+app_group: healthcare
+git_repo: file:///var/www/visma-healthcare
+git_branch: feature/optional-improvements
+
+# Python Configuration
+python_version: "3.11"
+
+# Node.js Configuration
+nodejs_version: "22.x"
+
+# PostgreSQL Configuration
+db_name: healthcare_db
+db_user: healthcare
+db_password: "45&hcCT^-03^0za!t_J!t+$9Lg=a&_E@"
+db_host: localhost
+db_port: 5432
+postgresql_version: "16"
+
+# Redis Configuration
+redis_host: localhost
+redis_port: 6379
+redis_db: 0
+redis_url: "redis://localhost:6379/0"
+
+# RabbitMQ Configuration
+rabbitmq_user: healthcare
+rabbitmq_password: "&Xpgj#%VDkZFT5T^QH7t7u0iv_mAZr!v"
+rabbitmq_vhost: "/healthcare"
+celery_broker_url: "amqp://{{ rabbitmq_user }}:{{ rabbitmq_password }}@localhost:5672/{{ rabbitmq_vhost }}"
+
+# Django Configuration
+django_secret_key: "SOXwNe38x*pD+AnWjEseo5IPoF9vq274R2cd0eX6#^Sm!9&jHu"
+django_debug: false
+django_allowed_hosts: "localhost,127.0.0.1"
+cors_allowed_origins: "http://localhost,http://127.0.0.1"
+
+# Gunicorn Configuration
+gunicorn_workers: 4
+gunicorn_bind: "127.0.0.1:8000"
+gunicorn_timeout: 120
+
+# Celery Configuration
+celery_worker_concurrency: 4
+celery_worker_log_level: info
+celery_result_backend: "redis://localhost:6379/1"
+
+# Nginx Configuration
+nginx_port: 80
+nginx_server_name: localhost
+
+# Deployment Settings
+deploy_env: production
+run_migrations: true
+collect_static: true

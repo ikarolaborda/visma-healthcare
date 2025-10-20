@@ -1,0 +1,57 @@
+---
+# PostgreSQL role - Database setup
+
+- name: Install PostgreSQL
+  apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+
+- name: Ensure PostgreSQL is running
+  service:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Create PostgreSQL database
+  postgresql_db:
+    name: "{{ db_name }}"
+    encoding: UTF-8
+    state: present
+  become_user: postgres
+
+- name: Create PostgreSQL user
+  postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    state: present
+  become_user: postgres
+
+- name: Grant privileges to PostgreSQL user
+  postgresql_user:
+    name: "{{ db_user }}"
+    db: "{{ db_name }}"
+    priv: ALL
+    state: present
+  become_user: postgres
+
+- name: Ensure user has createdb privilege
+  postgresql_user:
+    name: "{{ db_user }}"
+    role_attr_flags: CREATEDB
+    state: present
+  become_user: postgres
+
+- name: Grant schema permissions
+  postgresql_query:
+    db: "{{ db_name }}"
+    query: "GRANT ALL ON SCHEMA public TO {{ db_user }};"
+  become_user: postgres
+
+- name: Grant default privileges for tables
+  postgresql_query:
+    db: "{{ db_name }}"
+    query: "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO {{ db_user }};"
+  become_user: postgres

@@ -275,3 +275,34 @@ restore-db: ## Restore database from backup.sql
 	@echo "$(YELLOW)Restoring database from backup.sql...$(NC)"
 	docker compose exec -T db psql -U postgres healthcare_db < backup.sql
 	@echo "$(GREEN)Database restored!$(NC)"
+
+##@ Vagrant VM Commands
+
+vagrant-up: ## Start Vagrant VM and deploy application
+	@echo "$(GREEN)Starting Vagrant VM...$(NC)"
+	@./vagrant-deploy.sh up
+
+vagrant-halt: ## Stop Vagrant VM
+	@echo "$(YELLOW)Stopping Vagrant VM...$(NC)"
+	@./vagrant-deploy.sh halt
+
+vagrant-destroy: ## Destroy Vagrant VM completely
+	@echo "$(RED)Destroying Vagrant VM...$(NC)"
+	@./vagrant-deploy.sh destroy
+
+vagrant-reload: ## Reload and re-provision Vagrant VM
+	@echo "$(GREEN)Reloading Vagrant VM...$(NC)"
+	@./vagrant-deploy.sh reload
+
+vagrant-provision: ## Re-run Ansible provisioning on Vagrant VM
+	@echo "$(GREEN)Provisioning Vagrant VM...$(NC)"
+	@./vagrant-deploy.sh provision
+
+vagrant-ssh: ## SSH into Vagrant VM
+	@./vagrant-deploy.sh ssh
+
+vagrant-status: ## Show Vagrant VM status
+	@./vagrant-deploy.sh status
+
+vagrant-logs: ## View application logs in Vagrant VM
+	@./vagrant-deploy.sh logs

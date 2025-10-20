@@ -1,0 +1,51 @@
+---
+# Frontend role - Vue.js application and Nginx setup
+
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Install frontend dependencies
+  npm:
+    path: "{{ app_directory }}/frontend"
+    state: present
+  become_user: "{{ app_user }}"
+
+- name: Build frontend for production
+  command: npm run build
+  args:
+    chdir: "{{ app_directory }}/frontend"
+  become_user: "{{ app_user }}"
+  environment:
+    NODE_ENV: production
+
+- name: Create Nginx configuration from template
+  template:
+    src: nginx-healthcare.conf.j2
+    dest: /etc/nginx/sites-available/healthcare
+    mode: '0644'
+  notify: restart nginx
+
+- name: Enable Nginx site
+  file:
+    src: /etc/nginx/sites-available/healthcare
+    dest: /etc/nginx/sites-enabled/healthcare
+    state: link
+  notify: restart nginx
+
+- name: Remove default Nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx
+
+- name: Test Nginx configuration
+  command: nginx -t
+  changed_when: false
+
+- name: Ensure Nginx is started and enabled
+  service:
+    name: nginx
+    state: started
+    enabled: yes

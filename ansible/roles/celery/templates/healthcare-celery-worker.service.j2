@@ -1,0 +1,19 @@
+[Unit]
+Description=Healthcare Celery Worker
+After=network.target rabbitmq-server.service redis.service
+
+[Service]
+Type=simple
+User={{ app_user }}
+Group={{ app_group }}
+WorkingDirectory={{ app_directory }}/backend
+Environment="PATH={{ app_directory }}/backend/venv/bin"
+EnvironmentFile={{ app_directory }}/.env
+ExecStart={{ app_directory }}/backend/venv/bin/celery -A config worker -l {{ celery_worker_log_level }} --concurrency={{ celery_worker_concurrency }} --logfile=/var/log/{{ app_name }}/celery-worker.log
+Restart=on-failure
+RestartSec=10s
+RuntimeDirectory=celery
+RuntimeDirectoryMode=0755
+
+[Install]
+WantedBy=multi-user.target

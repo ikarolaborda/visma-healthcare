@@ -24,14 +24,28 @@ class PrescriptionViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """
-        List all prescriptions as an array of FHIR MedicationRequest resources.
+        List all prescriptions as FHIR MedicationRequest resources in a Bundle.
 
         Returns:
-            Response: Array of MedicationRequest resources
+            Response: FHIR Bundle containing MedicationRequest resources
         """
         queryset = Prescription.objects.select_related('patient', 'prescriber').all()
         serializer = PrescriptionSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # Create FHIR Bundle response
+        bundle = {
+            "resourceType": "Bundle",
+            "type": "searchset",
+            "total": len(serializer.data),
+            "entry": [
+                {
+                    "resource": prescription_data
+                }
+                for prescription_data in serializer.data
+            ]
+        }
+
+        return Response(bundle, status=status.HTTP_200_OK)
 
     def create(self, request):
         """

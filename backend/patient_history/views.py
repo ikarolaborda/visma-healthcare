@@ -24,7 +24,21 @@ class ClinicalRecordViewSet(viewsets.ViewSet):
         queryset = ClinicalRecord.objects.select_related('patient', 'recorded_by').all()
         serializer_class = self.get_serializer_class()
         serializer = serializer_class(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # Create FHIR Bundle response
+        bundle = {
+            "resourceType": "Bundle",
+            "type": "searchset",
+            "total": len(serializer.data),
+            "entry": [
+                {
+                    "resource": record_data
+                }
+                for record_data in serializer.data
+            ]
+        }
+
+        return Response(bundle, status=status.HTTP_200_OK)
 
     def create(self, request):
         serializer_class = self.get_serializer_class()

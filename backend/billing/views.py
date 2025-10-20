@@ -15,7 +15,21 @@ class InvoiceViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = Invoice.objects.select_related('patient', 'appointment').all()
         serializer = InvoiceSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # Create FHIR Bundle response
+        bundle = {
+            "resourceType": "Bundle",
+            "type": "searchset",
+            "total": len(serializer.data),
+            "entry": [
+                {
+                    "resource": invoice_data
+                }
+                for invoice_data in serializer.data
+            ]
+        }
+
+        return Response(bundle, status=status.HTTP_200_OK)
 
     def create(self, request):
         serializer = InvoiceSerializer(data=request.data)

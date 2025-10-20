@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import datetime, timedelta
 from uuid import UUID
@@ -21,7 +22,7 @@ from .services import AppointmentService
 from .serializers import AppointmentSerializer, FHIRAppointmentSerializer
 
 
-class AppointmentViewSet(viewsets.ModelViewSet):
+class AppointmentViewSet(viewsets.ViewSet):
     """
     ViewSet for managing Appointment resources.
 
@@ -108,6 +109,77 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             return AppointmentSerializer
         return FHIRAppointmentSerializer
 
+    def get_serializer(self, *args, **kwargs):
+        """
+        Return a serializer instance.
+        """
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', {'request': self.request})
+        return serializer_class(*args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of all appointments in FHIR format",
+        responses={
+            200: openapi.Response(
+                description="Bundle of Appointment resources",
+                examples={
+                    "application/json": {
+                        "resourceType": "Bundle",
+                        "type": "searchset",
+                        "total": 2,
+                        "entry": []
+                    }
+                }
+            )
+        }
+    )
+    def list(self, request):
+        """
+        List all appointments as FHIR Appointment resources in a Bundle.
+
+        Returns:
+            Response: FHIR Bundle containing Appointment resources
+        """
+        queryset = self.get_queryset()
+        serializer = FHIRAppointmentSerializer(queryset, many=True)
+        
+        # Create FHIR Bundle response
+        bundle = {
+            "resourceType": "Bundle",
+            "type": "searchset",
+            "total": len(serializer.data),
+            "entry": [
+                {
+                    "resource": appointment_data
+                }
+                for appointment_data in serializer.data
+            ]
+        }
+        
+        return Response(bundle, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a specific appointment by ID",
+        responses={
+            200: openapi.Response(description="Appointment resource"),
+            404: openapi.Response(description="Appointment not found")
+        }
+    )
+    def retrieve(self, request, pk=None):
+        """
+        Retrieve a specific appointment by ID.
+
+        Args:
+            request: HTTP request
+            pk: Appointment ID (UUID)
+
+        Returns:
+            Response: FHIR Appointment resource
+        """
+        appointment = get_object_or_404(Appointment, pk=pk)
+        serializer = FHIRAppointmentSerializer(appointment)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @swagger_auto_schema(
         operation_description="Create a new appointment",
         request_body=AppointmentSerializer,
@@ -154,7 +226,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             404: "Appointment not found"
         }
     )
-    def update(self, request, *args, **kwargs):
+    def update(self, request, pk=None, *args, **kwargs):
         """
         Update an existing appointment with validation.
 
@@ -163,7 +235,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         - No scheduling conflicts if practitioner or times change
         - Valid status transitions
         """
-        appointment = self.get_object()
+        appointment = get_object_or_404(Appointment, pk=pk)
         serializer = self.get_serializer(appointment, data=request.data, partial=False)
         serializer.is_valid(raise_exception=True)
 
@@ -196,9 +268,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             404: "Appointment not found"
         }
     )
-    def partial_update(self, request, *args, **kwargs):
+    def partial_update(self, request, pk=None, *args, **kwargs):
         """Partial update with validation."""
-        appointment = self.get_object()
+        appointment = get_object_or_404(Appointment, pk=pk)
         serializer = self.get_serializer(appointment, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
@@ -230,7 +302,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             404: "Appointment not found"
         }
     )
-    def destroy(self, request, *args, **kwargs):
+    def destroy(self, request, pk=None, *args, **kwargs):
         """
         Delete an appointment with validation.
 
@@ -238,7 +310,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         - Fulfilled appointments (should be cancelled instead)
         - Past appointments that aren't cancelled or no-show
         """
-        appointment = self.get_object()
+        appointment = get_object_or_404(Appointment, pk=pk)
 
         try:
             # Validate deletion

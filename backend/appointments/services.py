@@ -116,7 +116,10 @@ class AppointmentService(BaseService[Appointment]):
 
         # If practitioner or times are changing, check for conflicts
         # Handle both 'practitioner' (from serializer) and 'practitioner_id' (from direct updates)
-        practitioner_id = data.get('practitioner') or data.get('practitioner_id', existing.practitioner_id)
+        practitioner_id = data.get('practitioner', data.get('practitioner_id', existing.practitioner_id))
+        if practitioner_id is None:
+            practitioner_id = existing.practitioner_id
+
         if ('start' in data or 'end' in data or 'practitioner' in data or 'practitioner_id' in data):
             conflicts = self.repository.find_conflicts(
                 practitioner_id=practitioner_id,

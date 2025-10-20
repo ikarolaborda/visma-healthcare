@@ -37,7 +37,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     """
 
     permission_classes = [IsAuthenticated]
-    pagination_class = None  # Disable pagination to match Patient and Practitioner endpoints
     service = AppointmentService()
 
     def get_queryset(self):

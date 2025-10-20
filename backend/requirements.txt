@@ -13,7 +13,7 @@ fhir.resources==7.1.0
 djangorestframework-simplejwt==5.3.1
 
 # API Documentation
-drf-yasg==1.21.7
+drf-yasg==1.21.11
 
 # Environment
 python-decouple==3.8

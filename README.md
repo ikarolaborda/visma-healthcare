@@ -158,12 +158,52 @@ The Patient model conforms to FHIR R4 Patient resource structure:
 
 ## Quick Start
 
+### Option 1: Vagrant VM (Recommended - Isolated Environment)
+
+**Perfect for development without affecting your host system!**
+
+1. **Install prerequisites**:
+   - [Vagrant](https://www.vagrantup.com/downloads)
+   - [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+
+2. **Clone and deploy**:
+   ```bash
+   git clone https://github.com/ikarolaborda/visma-healthcare.git
+   cd visma-healthcare
+   ./vagrant-deploy.sh up
+   ```
+
+3. **Access the application**:
+   - Frontend: http://localhost:8080
+   - Backend API: http://localhost:8080/api/
+   - Admin: http://localhost:8080/admin/
+   - Direct VM: http://192.168.56.10
+
+4. **Manage the VM**:
+   ```bash
+   ./vagrant-deploy.sh ssh      # SSH into VM
+   ./vagrant-deploy.sh logs     # View logs
+   ./vagrant-deploy.sh halt     # Stop VM
+   ./vagrant-deploy.sh destroy  # Delete VM
+   ```
+
+**Benefits**:
+- ✅ Completely isolated from your host system
+- ✅ No permission conflicts
+- ✅ Clean development environment
+- ✅ Easy to destroy and recreate
+- ✅ Matches production environment closely
+
+---
+
+### Option 2: Docker (Quick and Portable)
+
 ### Prerequisites
 
 - Docker and Docker Compose
 - Make (optional, for convenience commands)
 
-### One-Command Installation (Recommended)
+### One-Command Installation
 
 1. **Clone the repository**:
    ```bash

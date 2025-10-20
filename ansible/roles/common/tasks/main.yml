@@ -1,0 +1,117 @@
+---
+# Common role - System setup and dependencies
+
+- name: Create application group
+  group:
+    name: "{{ app_group }}"
+    system: yes
+    state: present
+
+- name: Create application user
+  user:
+    name: "{{ app_user }}"
+    group: "{{ app_group }}"
+    system: yes
+    create_home: yes
+    home: "{{ app_directory }}"
+    shell: /bin/bash
+    state: present
+
+- name: Install system dependencies
+  apt:
+    name:
+      - git
+      - curl
+      - build-essential
+      - libpq-dev
+      - python3-dev
+      - python3-pip
+      - python3-venv
+      - pkg-config
+      - libssl-dev
+    state: present
+    update_cache: yes
+
+- name: Add deadsnakes PPA for Python 3.11
+  apt_repository:
+    repo: ppa:deadsnakes/ppa
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install Python 3.11
+  apt:
+    name:
+      - python3.11
+      - python3.11-venv
+      - python3.11-dev
+    state: present
+    update_cache: yes
+
+- name: Create application directory
+  file:
+    path: "{{ app_directory }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0755'
+
+- name: Check if repository already exists
+  stat:
+    path: "{{ app_directory }}/.git"
+  register: git_repo_exists
+
+- name: Configure Git safe directory
+  command: git config --global --add safe.directory {{ app_directory }}
+  become_user: "{{ app_user }}"
+  when: git_repo_exists.stat.exists
+
+- name: Set proper ownership for existing directory
+  file:
+    path: "{{ app_directory }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    recurse: yes
+  when: git_repo_exists.stat.exists
+
+- name: Copy application files from Vagrant sync
+  synchronize:
+    src: "{{ git_repo }}/"
+    dest: "{{ app_directory }}/"
+    delete: no
+    recursive: yes
+    rsync_opts:
+      - "--exclude=.git"
+      - "--exclude=node_modules"
+      - "--exclude=backend/venv"
+      - "--exclude=backend/__pycache__"
+      - "--exclude=frontend/dist"
+      - "--exclude=.env"
+      - "--exclude=*.pyc"
+      - "--exclude=.npm"
+      - "--exclude=.cache"
+  when: git_repo is defined and git_repo.startswith('/vagrant')
+
+- name: Clone application repository from remote
+  git:
+    repo: "{{ git_repo }}"
+    dest: "{{ app_directory }}"
+    version: "{{ git_branch }}"
+    force: yes
+  become_user: "{{ app_user }}"
+  when: not git_repo_exists.stat.exists and not (git_repo is defined and git_repo.startswith('/vagrant'))
+
+- name: Create log directory
+  file:
+    path: "/var/log/{{ app_name }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0755'
+
+- name: Create systemd runtime directory
+  file:
+    path: /var/run/celery
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0755'

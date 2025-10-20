@@ -9,7 +9,9 @@ import type {
   Appointment,
   MedicationRequest,
   Observation,
-  Invoice
+  Invoice,
+  Bundle,
+  FHIRResource
 } from '../types/fhir'
 import type {
   PatientFormData,
@@ -131,6 +133,13 @@ apiClient.interceptors.response.use(
 )
 
 /**
+ * Helper function to extract resources from FHIR Bundle
+ */
+function extractResourcesFromBundle<T extends FHIRResource>(bundle: Bundle<T>): T[] {
+  return bundle.entry?.map(entry => entry.resource).filter((resource): resource is T => resource !== undefined) || []
+}
+
+/**
  * Patient API Service
  */
 export const patientService = {
@@ -139,8 +148,8 @@ export const patientService = {
    */
   async getAllPatients(): Promise<Patient[]> {
     try {
-      const response = await apiClient.get<Patient[]>('/fhir/Patient/')
-      return response.data
+      const response = await apiClient.get<Bundle<Patient>>('/fhir/Patient/')
+      return extractResourcesFromBundle(response.data)
     } catch (error) {
       console.error('Error fetching patients:', error)
       throw error
@@ -208,8 +217,8 @@ export const appointmentService = {
    */
   async getAllAppointments(): Promise<Appointment[]> {
     try {
-      const response = await apiClient.get<Appointment[]>('/fhir/Appointment/')
-      return response.data
+      const response = await apiClient.get<Bundle<Appointment>>('/fhir/Appointment/')
+      return extractResourcesFromBundle(response.data)
     } catch (error) {
       console.error('Error fetching appointments:', error)
       throw error
@@ -234,8 +243,8 @@ export const appointmentService = {
    */
   async getAppointmentsByPatient(patientId: string): Promise<Appointment[]> {
     try {
-      const response = await apiClient.get<Appointment[]>(`/fhir/Appointment/?patient=${patientId}`)
-      return response.data
+      const response = await apiClient.get<Bundle<Appointment>>(`/fhir/Appointment/?patient=${patientId}`)
+      return extractResourcesFromBundle(response.data)
     } catch (error) {
       console.error(`Error fetching appointments for patient ${patientId}:`, error)
       throw error
@@ -320,10 +329,11 @@ export const practitionerService = {
     console.log('[PractitionerService] getAllPractitioners called')
     try {
       console.log('[PractitionerService] Making API request to /fhir/Practitioner/')
-      const response = await apiClient.get<Practitioner[]>('/fhir/Practitioner/')
-      console.log('[PractitionerService] Response received:', response.data.length, 'practitioners')
-      console.log('[PractitionerService] First practitioner:', response.data[0])
-      return response.data
+      const response = await apiClient.get<Bundle<Practitioner>>('/fhir/Practitioner/')
+      const practitioners = extractResourcesFromBundle(response.data)
+      console.log('[PractitionerService] Response received:', practitioners.length, 'practitioners')
+      console.log('[PractitionerService] First practitioner:', practitioners[0])
+      return practitioners
     } catch (error) {
       console.error('[PractitionerService] Error fetching practitioners:', error)
       throw error
@@ -387,8 +397,8 @@ export const practitionerService = {
  */
 export const prescriptionService = {
   async getAllPrescriptions(): Promise<MedicationRequest[]> {
-    const response = await apiClient.get<MedicationRequest[]>('/fhir/MedicationRequest/')
-    return response.data
+    const response = await apiClient.get<Bundle<MedicationRequest>>('/fhir/MedicationRequest/')
+    return extractResourcesFromBundle(response.data)
   },
 
   async getPrescriptionById(id: string): Promise<MedicationRequest> {
@@ -416,8 +426,8 @@ export const prescriptionService = {
  */
 export const clinicalRecordService = {
   async getAllRecords(): Promise<Observation[]> {
-    const response = await apiClient.get<Observation[]>('/fhir/ClinicalRecord/')
-    return response.data
+    const response = await apiClient.get<Bundle<Observation>>('/fhir/ClinicalRecord/')
+    return extractResourcesFromBundle(response.data)
   },
 
   async getRecordById(id: string): Promise<Observation> {
@@ -445,8 +455,8 @@ export const clinicalRecordService = {
  */
 export const invoiceService = {
   async getAllInvoices(): Promise<Invoice[]> {
-    const response = await apiClient.get<Invoice[]>('/fhir/Invoice/')
-    return response.data
+    const response = await apiClient.get<Bundle<Invoice>>('/fhir/Invoice/')
+    return extractResourcesFromBundle(response.data)
   },
 
   async getInvoiceById(id: string): Promise<Invoice> {

@@ -1,4 +1,5 @@
 # Multi-stage Dockerfile for Vue.js frontend
+# Multi-architecture support (ARM64/AMD64)
 # Following Docker best practices for production
 
 # Build stage

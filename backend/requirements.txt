@@ -48,7 +48,7 @@ django-celery-beat==2.7.0
 django-celery-results==2.5.1
 
 # Report Generation
-reportlab==4.0.8
+reportlab==4.4.4
 pandas==2.1.4
 openpyxl==3.1.2
 

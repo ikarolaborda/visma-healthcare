@@ -42,7 +42,7 @@ django-redis==5.4.0
 
 # Message Queue & Async Tasks
 celery[redis]==5.3.4
-kombu==5.3.4
+kombu==5.5.4
 amqp==5.2.0
 django-celery-beat==2.7.0
 django-celery-results==2.5.1

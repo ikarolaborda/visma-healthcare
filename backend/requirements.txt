@@ -19,7 +19,7 @@ drf-yasg==1.21.7
 python-decouple==3.8
 
 # WSGI Server
-gunicorn==21.2.0
+gunicorn==23.0.0
 
 # Testing
 pytest==7.4.4

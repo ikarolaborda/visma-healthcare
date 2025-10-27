@@ -50,7 +50,7 @@ django-celery-results==2.5.1
 # Report Generation
 reportlab==4.0.8
 pandas==2.1.4
-openpyxl==3.1.2
+openpyxl==3.1.5
 
 # AI Integration
 openai==1.6.1
